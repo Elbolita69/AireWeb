@@ -231,46 +231,109 @@ const Storage = {
   },
 
   // Guardar proyecto
+  // Dentro del objeto Storage, modificar el método saveProject:
   saveProject: function (project) {
     const projects = this.getProjects()
-
-    // Si no tiene ID, es un nuevo proyecto
-    if (!project.id) {
-      const counter = this.getCounter()
-      project.id = (++counter.projects).toString()
-      this.saveCounter(counter)
-      projects.push(project)
-
-      // Crear notificación para el creador
-      this.createNotification({
-        usuarioId: project.creadorId,
-        tipo: "proyecto_creado",
-        mensaje: `Has creado el proyecto "${project.nombre}" con ID ${project.id}.`,
-        fechaCreacion: new Date().toISOString(),
-        leido: false,
-      })
-    } else {
-      // Actualizar proyecto existente
-      const index = projects.findIndex((p) => p.id === project.id)
-      if (index !== -1) {
-        projects[index] = project
-
-        // Crear notificación para el creador
+    
+    try {
+      // Si no tiene ID, es un nuevo proyecto
+      if (!project.id) {
+        // Generar el ID personalizado
+        project.id = this.generateProjectId(project)
+        
+        // Incrementar contador
+        const counter = this.getCounter()
+        counter.projects += 1
+        this.saveCounter(counter)
+        
+        projects.push(project)
+        
+        // Crear notificación
         this.createNotification({
           usuarioId: project.creadorId,
-          tipo: "proyecto_actualizado",
-          mensaje: `El proyecto "${project.nombre}" con ID ${project.id} ha sido actualizado.`,
+          tipo: "proyecto_creado",
+          mensaje: `Has creado el proyecto "${project.nombre}" con ID ${project.id}.`,
           fechaCreacion: new Date().toISOString(),
           leido: false,
         })
       } else {
-        projects.push(project)
+        // Actualizar proyecto existente
+        const index = projects.findIndex((p) => p.id === project.id)
+        if (index !== -1) {
+          projects[index] = project
+          
+          // Crear notificación
+          this.createNotification({
+            usuarioId: project.creadorId,
+            tipo: "proyecto_actualizado",
+            mensaje: `El proyecto "${project.nombre}" con ID ${project.id} ha sido actualizado.`,
+            fechaCreacion: new Date().toISOString(),
+            leido: false,
+          })
+        } else {
+          projects.push(project)
+        }
       }
+      
+      localStorage.setItem(this.KEYS.PROJECTS, JSON.stringify(projects))
+      return project
+      
+    } catch (error) {
+      console.error("Error en saveProject:", error)
+      throw error // Re-lanzar el error para manejarlo en prst.js
     }
-
-    localStorage.setItem(this.KEYS.PROJECTS, JSON.stringify(projects))
-    return project
   },
+
+// Añadir este nuevo método al objeto Storage:
+generateProjectId: function(project) {
+    // Obtener el usuario PRST que crea el proyecto
+    const creator = this.getUserById(project.creadorId)
+    if (!creator || creator.rol !== "prst") {
+        throw new Error("El proyecto debe ser creado por un PRST")
+    }
+    
+    // 1. PRST (nombrePRST en mayúsculas, reemplazar espacios con _)
+    const prstPart = creator.nombrePRST 
+        ? creator.nombrePRST.toUpperCase().replace(/\s+/g, '_')
+        : "PRST"
+    
+    // 2. Departamento (código según el departamento del proyecto)
+    let deptCode = "UNK"
+    switch(project.departamento?.toUpperCase()) {
+        case "ATLÁNTICO":
+        case "ATLANTICO":
+            deptCode = "ALT"
+            break
+        case "MAGDALENA":
+            deptCode = "MAG"
+            break
+        case "LA GUAJIRA":
+        case "GUAJIRA":
+            deptCode = "LA"
+            break
+    }
+    
+    // 3. Mes y año actual
+    const now = new Date()
+    const monthNames = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", 
+                       "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"]
+    const monthPart = monthNames[now.getMonth()]
+    const yearPart = now.getFullYear()
+    
+    // 4. Número continuo (contar proyectos existentes con mismo PRST, departamento y periodo)
+    const existingProjects = this.getProjects().filter(p => {
+        const parts = p.id.split('_')
+        return parts.length >= 4 && 
+               parts[0] === prstPart && 
+               parts[1] === deptCode && 
+               parts[2] === `${monthPart}.${yearPart}`
+    })
+    
+    const sequentialNumber = existingProjects.length + 1
+    
+    // Construir el ID completo
+    return `${prstPart}_${deptCode}_${monthPart}.${yearPart}_${sequentialNumber}`
+},
 
   // Eliminar proyecto
   deleteProject: function (id) {

@@ -495,6 +495,10 @@
               <select class="form-select" id="rol" required>
                 <option value="">Seleccionar</option>
                 <option value="admin">Administrador</option>
+                <option value="prst">PRST</option>
+                <option value="ejecutiva">Ejecutiva</option>
+                <option value="coordinador">Coordinador</option>
+                <option value="analista">Analista</option>
                 <option value="brigada">Brigada</option>
                 <option value="trabajador">Trabajador</option>
               </select>
@@ -520,6 +524,37 @@
       </div>
     </div>
   </div>
+
+
+  <!-- Campos para PRST -->
+<div id="camposPRST" style="display: none;">
+  <div class="mb-3">
+    <label for="nombrePRST" class="form-label">Nombre del PRST</label>
+    <input type="text" class="form-control" id="nombrePRST">
+  </div>
+  <div class="mb-3">
+    <label for="cedula" class="form-label">Cédula</label>
+    <input type="text" class="form-control" id="cedula">
+  </div>
+  <div class="mb-3">
+    <label for="matriculaProfesional" class="form-label">Matrícula Profesional</label>
+    <input type="text" class="form-control" id="matriculaProfesional">
+  </div>
+</div>
+
+<!-- Campos para Coordinador -->
+<div id="camposCoordinador" style="display: none;">
+  <div class="mb-3">
+    <label for="tipoCoordinador" class="form-label">Tipo de Coordinador</label>
+    <select class="form-select" id="tipoCoordinador">
+      <option value="">Seleccionar</option>
+      <option value="administrativo">Administrativo</option>
+      <option value="operativo">Operativo</option>
+      <option value="censo">Censo</option>
+    </select>
+  </div>
+</div>
+
 
   <!-- Modal para crear/editar proyecto -->
   
@@ -1227,6 +1262,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const modalUsuario = new bootstrap.Modal(document.getElementById("modalUsuario"));
     modalUsuario.show();
   };
+
+  
 });
 </script>
 </body>

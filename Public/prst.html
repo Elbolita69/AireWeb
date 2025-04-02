@@ -58,8 +58,8 @@
                                 <table class="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th>ID</th>
-                                            <th>Nombre</th>
+                                            <th>OT AIR-E</th>
+                                            <th>Nombre del Proyecto</th>
                                             <th>Ubicación</th>
                                             <th>Fecha Creación</th>
                                             <th>Estado</th>
@@ -107,16 +107,9 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <label for="project-dwg" class="form-label">Plano DWG</label>
-                                            <input type="file" class="form-control" id="project-dwg" accept=".dwg">
-                                            <div class="form-text">Archivo DWG del plano</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label for="project-plano" class="form-label">Plano (PDF)</label>
-                                            <input type="file" class="form-control" id="project-plano" accept=".pdf">
-                                            <div class="form-text">Archivo PDF del plano</div>
+                                            <label for="project-dwg" class="form-label">Plano DWG/PDF</label>
+                                            <input type="file" class="form-control" id="project-dwg" accept=".dwg, .pdf">
+                                            <div class="form-text">Archivo DWG/PDF del plano</div>
                                         </div>
                                     </div>
                                 </div>
@@ -178,20 +171,28 @@
                                     </div>
                                 </div>
                                 
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="project-municipality" class="form-label">Municipio *</label>
-                                            <input type="text" class="form-control" id="project-municipality" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="project-department" class="form-label">Departamento *</label>
-                                            <input type="text" class="form-control" id="project-department" required>
-                                        </div>
-                                    </div>
-                                </div>
+                                <!-- En la sección de Municipio y Departamento -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="project-department" class="form-label">Departamento *</label>
+            <select class="form-select" id="project-department" required>
+                <option value="">Seleccione un departamento</option>
+                <option value="Atlántico">Atlántico</option>
+                <option value="La Guajira">La Guajira</option>
+                <option value="Magdalena">Magdalena</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="project-municipality" class="form-label">Municipio *</label>
+            <select class="form-select" id="project-municipality" required>
+                <option value="">Primero seleccione un departamento</option>
+            </select>
+        </div>
+    </div>
+</div>
                                 
                                 <div class="row">
                                     <div class="col-md-12">
@@ -231,9 +232,26 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="project-connection" class="form-label">Punto de Conexión Eléctrico *</label>
-                                            <input type="text" class="form-control" id="project-connection" required>
+                                            <!-- Select dropdown for Sí or No -->
+                                            <select id="project-connection" class="form-control" required onchange="updateConnectionValue()">
+                                                <option value="" disabled selected>Seleccione</option>
+                                                <option value="Sí">Sí</option>
+                                                <option value="No">No</option>
+                                            </select>
+                                            <div class="form-text">Seleccione si tiene un punto de conexión eléctrico.</div>
                                         </div>
                                     </div>
+                                    
+                                    <script>
+                                        function updateConnectionValue() {
+                                            // Get the selected option from the select dropdown
+                                            const selectedOption = document.getElementById('project-connection').value;
+                                            
+                                            // Update the profile value with the selected option (this could be displayed elsewhere)
+                                            document.getElementById('detail-project-connection').textContent = selectedOption;
+                                        }
+                                    </script>
+                                    
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="project-observations" class="form-label">Observaciones (Opcional)</label>
@@ -374,7 +392,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="profile-item">
-                                <div class="profile-label">ID</div>
+                                <div class="profile-label">OT AIR</div>
                                 <div class="profile-value" id="detail-project-id"></div>
                             </div>
                         </div>
@@ -624,6 +642,7 @@
     <script src="Js/storage.js"></script>
     <!-- PRST JS -->
     <script src="Js/prst.js"></script>
+    
 </body>
 </html>
 

@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "./login.html"
     return
   } else if (loggedUser.rol !== "admin") {
-    window.location.href = "./brigada.html"
+    window.location.href = "./dashboard.html"
     return
   }
 
@@ -326,38 +326,68 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Función para cargar usuarios
   function cargarUsuarios() {
-    const usuarios = Storage.getUsers()
-    const tablaUsuarios = document.getElementById("tablaUsuarios")
-
-    // Cambiar el encabezado de la tabla de "Sector" a "Departamento"
-    const encabezadosSector = document.querySelectorAll("th")
-    encabezadosSector.forEach((th) => {
-      if (th.textContent.includes("Sector")) {
-        th.textContent = "Departamento"
-      }
-    })
-
+    const usuarios = Storage.getUsers();
+    const tablaUsuarios = document.getElementById("tablaUsuarios");
+  
     // Aplicar filtros
-    const rolFiltro = filtroRolUsuario.value
-    const sectorFiltro = filtroSectorUsuario.value
-    const busqueda = buscarUsuario.value.toLowerCase()
-
+    const rolFiltro = filtroRolUsuario.value;
+    const sectorFiltro = filtroSectorUsuario.value;
+    const busqueda = buscarUsuario.value.toLowerCase();
+  
     const usuariosFiltrados = usuarios.filter((usuario) => {
-      const cumpleRol = !rolFiltro || usuario.rol === rolFiltro
-      const cumpleSector = !sectorFiltro || usuario.sector === sectorFiltro
+      const cumpleRol = !rolFiltro || usuario.rol === rolFiltro;
+      const cumpleSector = !sectorFiltro || usuario.sector === sectorFiltro;
       const cumpleBusqueda =
         !busqueda ||
         (usuario.nombre && usuario.nombre.toLowerCase().includes(busqueda)) ||
         (usuario.apellido && usuario.apellido.toLowerCase().includes(busqueda)) ||
         (usuario.usuario && usuario.usuario.toLowerCase().includes(busqueda)) ||
-        (usuario.correo && usuario.correo.toLowerCase().includes(busqueda))
-
-      return cumpleRol && cumpleSector && cumpleBusqueda
-    })
-
+        (usuario.correo && usuario.correo.toLowerCase().includes(busqueda));
+  
+      return cumpleRol && cumpleSector && cumpleBusqueda;
+    });
+  
     // Generar HTML para la tabla
-    let html = ""
+    let html = "";
     usuariosFiltrados.forEach((usuario) => {
+      // Determinar el texto del rol y clase del badge
+      let rolTexto = "";
+      let rolBadgeClass = "";
+      
+      switch(usuario.rol) {
+        case "admin":
+          rolTexto = "Administrador";
+          rolBadgeClass = "bg-danger";
+          break;
+        case "prst":
+          rolTexto = "PRST";
+          rolBadgeClass = "bg-primary";
+          break;
+        case "ejecutiva":
+          rolTexto = "Ejecutiva";
+          rolBadgeClass = "bg-info";
+          break;
+        case "coordinador":
+          rolTexto = "Coordinador";
+          rolBadgeClass = "bg-warning";
+          break;
+        case "analista":
+          rolTexto = "Analista";
+          rolBadgeClass = "bg-secondary";
+          break;
+        case "brigada":
+          rolTexto = "Brigada";
+          rolBadgeClass = "bg-success";
+          break;
+        case "trabajador":
+          rolTexto = "Trabajador";
+          rolBadgeClass = "bg-dark";
+          break;
+        default:
+          rolTexto = usuario.rol;
+          rolBadgeClass = "bg-light text-dark";
+      }
+  
       html += `
         <tr>
           <td>${usuario.id}</td>
@@ -365,12 +395,12 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>${usuario.usuario}</td>
           <td>${usuario.correo}</td>
           <td>
-            <span class="badge ${usuario.rol === "admin" ? "bg-danger" : usuario.rol === "brigada" ? "bg-primary" : "bg-success"}">
-              ${usuario.rol === "admin" ? "Administrador" : usuario.rol === "brigada" ? "Brigada" : "Trabajador"}
+            <span class="badge ${rolBadgeClass}">
+              ${rolTexto}
             </span>
           </td>
-          <td>${usuario.nombreBrigada || ""}</td>
-          <td>${usuario.sector || ""}</td>
+          <td>${usuario.nombreBrigada || usuario.nombrePRST || "N/A"}</td>
+          <td>${usuario.sector || "N/A"}</td>
           <td>
             <button class="btn btn-sm btn-primary me-1" onclick="editarUsuario('${usuario.id}')">
               <i class="bi bi-pencil"></i>
@@ -380,18 +410,18 @@ document.addEventListener("DOMContentLoaded", () => {
             </button>
           </td>
         </tr>
-      `
-    })
-
+      `;
+    });
+  
     if (usuariosFiltrados.length === 0) {
       html = `
         <tr>
           <td colspan="8" class="text-center">No se encontraron usuarios</td>
         </tr>
-      `
+      `;
     }
-
-    tablaUsuarios.innerHTML = html
+  
+    tablaUsuarios.innerHTML = html;
   }
 
   // Función para abrir modal de nuevo usuario
@@ -406,54 +436,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Función para guardar usuario
   function guardarUsuario() {
-    const form = document.getElementById("formUsuario")
-
+    const form = document.getElementById("formUsuario");
+  
     if (!form.checkValidity()) {
-      form.reportValidity()
-      return
+      form.reportValidity();
+      return;
     }
-
-    const usuarioId = document.getElementById("usuarioId").value
+  
+    const usuarioId = document.getElementById("usuarioId").value;
     const usuario = {
       id: usuarioId || null,
       nombre: document.getElementById("nombre").value,
-      apellido: "",
-      nombreBrigada: document.getElementById("nombreBrigada").value,
-      cargo: document.getElementById("cargo").value,
+      apellido: document.getElementById("apellido").value || "",
+      nombreBrigada: document.getElementById("nombreBrigada").value || "",
+      cargo: document.getElementById("cargo").value || "",
       correo: document.getElementById("correo").value,
       usuario: document.getElementById("usuario").value,
       password: document.getElementById("password").value,
       rol: document.getElementById("rol").value,
-      sector: document.getElementById("sector").value,
+      sector: document.getElementById("sector").value || "",
+      activo: true
+    };
+  
+    // Campos específicos por rol
+    if (usuario.rol === "prst") {
+      usuario.nombrePRST = document.getElementById("nombrePRST").value || "";
+      usuario.cedula = document.getElementById("cedula").value || "";
+      usuario.matriculaProfesional = document.getElementById("matriculaProfesional").value || "";
+    } else if (usuario.rol === "coordinador") {
+      usuario.tipoCoordinador = document.getElementById("tipoCoordinador").value || "";
     }
-
+  
     // Verificar si ya existe un usuario con ese nombre de usuario o correo
-    const usuarios = Storage.getUsers()
-    const usuarioExistente = usuarios.find((u) => u.usuario === usuario.usuario && (!usuarioId || u.id !== usuarioId))
-    const correoExistente = usuarios.find((u) => u.correo === usuario.correo && (!usuarioId || u.id !== usuarioId))
-
+    const usuarios = Storage.getUsers();
+    const usuarioExistente = usuarios.find((u) => u.usuario === usuario.usuario && (!usuarioId || u.id !== usuarioId));
+    const correoExistente = usuarios.find((u) => u.correo === usuario.correo && (!usuarioId || u.id !== usuarioId));
+  
     if (usuarioExistente) {
-      mostrarMensaje("Error", "Ya existe un usuario con ese nombre de usuario.")
-      return
+      mostrarMensaje("Error", "Ya existe un usuario con ese nombre de usuario.");
+      return;
     }
-
+  
     if (correoExistente) {
-      mostrarMensaje("Error", "Ya existe un usuario con ese correo electrónico.")
-      return
+      mostrarMensaje("Error", "Ya existe un usuario con ese correo electrónico.");
+      return;
     }
-
+  
     // Guardar usuario
-    Storage.saveUser(usuario)
-
+    Storage.saveUser(usuario);
+  
     // Cerrar modal
-    const modalUsuario = bootstrap.Modal.getInstance(document.getElementById("modalUsuario"))
-    modalUsuario.hide()
-
+    const modalUsuario = bootstrap.Modal.getInstance(document.getElementById("modalUsuario"));
+    modalUsuario.hide();
+  
     // Recargar tabla
-    cargarUsuarios()
-
+    cargarUsuarios();
+  
     // Mostrar mensaje
-    mostrarMensaje("Éxito", `Usuario ${usuarioId ? "actualizado" : "creado"} correctamente.`)
+    mostrarMensaje("Éxito", `Usuario ${usuarioId ? "actualizado" : "creado"} correctamente.`);
   }
 
   // Función para cargar proyectos
@@ -1496,27 +1536,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Función para editar usuario
   window.editarUsuario = (id) => {
-    const usuario = Storage.getUserById(id)
-
+    const usuario = Storage.getUserById(id);
+  
     if (!usuario) {
-      mostrarMensaje("Error", "Usuario no encontrado.")
-      return
+      mostrarMensaje("Error", "Usuario no encontrado.");
+      return;
     }
+  
+    document.getElementById("tituloModalUsuario").textContent = "Editar Usuario";
+    document.getElementById("usuarioId").value = usuario.id;
+    document.getElementById("nombre").value = usuario.nombre;
+    document.getElementById("apellido").value = usuario.apellido || "";
+    document.getElementById("nombreBrigada").value = usuario.nombreBrigada || "";
+    document.getElementById("cargo").value = usuario.cargo || "";
+    document.getElementById("correo").value = usuario.correo;
+    document.getElementById("usuario").value = usuario.usuario;
+    document.getElementById("password").value = usuario.password;
+    document.getElementById("rol").value = usuario.rol;
+    document.getElementById("sector").value = usuario.sector || "";
+  
+    // Mostrar campos específicos por rol
+    if (usuario.rol === "prst") {
+      document.getElementById("nombrePRST").value = usuario.nombrePRST || "";
+      document.getElementById("cedula").value = usuario.cedula || "";
+      document.getElementById("matriculaProfesional").value = usuario.matriculaProfesional || "";
+    } else if (usuario.rol === "coordinador") {
+      document.getElementById("tipoCoordinador").value = usuario.tipoCoordinador || "";
+    }
+  
+    const modalUsuario = new bootstrap.Modal(document.getElementById("modalUsuario"));
+    modalUsuario.show();
+  };
 
-    document.getElementById("tituloModalUsuario").textContent = "Editar Usuario"
-    document.getElementById("usuarioId").value = usuario.id
-    document.getElementById("nombre").value = usuario.nombre
-    document.getElementById("nombreBrigada").value = usuario.nombreBrigada || ""
-    document.getElementById("cargo").value = usuario.cargo || ""
-    document.getElementById("correo").value = usuario.correo
-    document.getElementById("usuario").value = usuario.usuario
-    document.getElementById("password").value = usuario.password
-    document.getElementById("rol").value = usuario.rol
-    document.getElementById("sector").value = usuario.sector || ""
-
-    const modalUsuario = new bootstrap.Modal(document.getElementById("modalUsuario"))
-    modalUsuario.show()
-  }
+  document.getElementById("rol").addEventListener("change", function() {
+    const rol = this.value;
+    const camposPRST = document.getElementById("camposPRST");
+    const camposCoordinador = document.getElementById("camposCoordinador");
+    
+    // Ocultar todos los campos específicos primero
+    camposPRST.style.display = "none";
+    camposCoordinador.style.display = "none";
+    
+    // Mostrar los campos correspondientes al rol seleccionado
+    if (rol === "prst") {
+      camposPRST.style.display = "block";
+    } else if (rol === "coordinador") {
+      camposCoordinador.style.display = "block";
+    }
+  });
 
   // Función para eliminar usuario
   window.eliminarUsuario = (id) => {
