@@ -153,28 +153,40 @@ const Storage = {
     return users.find((user) => user.correo === email)
   },
 
-  // Guardar usuario
+  // Guardar usuario - versión mejorada con manejo de errores
   saveUser: function (user) {
-    const users = this.getUsers()
+    try {
+      console.log("Storage.saveUser llamado con:", user)
+      const users = this.getUsers()
+      console.log("Usuarios actuales:", users)
 
-    // Si no tiene ID, es un nuevo usuario
-    if (!user.id) {
-      const counter = this.getCounter()
-      user.id = (++counter.users).toString()
-      this.saveCounter(counter)
-      users.push(user)
-    } else {
-      // Actualizar usuario existente
-      const index = users.findIndex((u) => u.id === user.id)
-      if (index !== -1) {
-        users[index] = user
-      } else {
+      // Si no tiene ID, es un nuevo usuario
+      if (!user.id) {
+        const counter = this.getCounter()
+        user.id = (++counter.users).toString()
+        console.log("Nuevo ID generado:", user.id)
+        this.saveCounter(counter)
         users.push(user)
+      } else {
+        // Actualizar usuario existente
+        const index = users.findIndex((u) => u.id === user.id)
+        if (index !== -1) {
+          users[index] = user
+          console.log("Usuario actualizado en posición:", index)
+        } else {
+          users.push(user)
+          console.log("Usuario existente añadido como nuevo")
+        }
       }
-    }
 
-    localStorage.setItem(this.KEYS.USERS, JSON.stringify(users))
-    return user
+      console.log("Guardando usuarios en localStorage:", users)
+      localStorage.setItem(this.KEYS.USERS, JSON.stringify(users))
+      console.log("Usuario guardado exitosamente")
+      return user
+    } catch (error) {
+      console.error("Error en Storage.saveUser:", error)
+      throw error
+    }
   },
 
   // Eliminar usuario
@@ -197,6 +209,13 @@ const Storage = {
     const user = users.find((u) => u.correo === email && u.password === password && u.activo)
 
     if (user) {
+      // Add last login timestamp
+      user.lastLogin = new Date().toISOString()
+
+      // Update user in storage with last login
+      this.saveUser(user)
+
+      // Set as logged user
       this.setLoggedUser(user)
       return user
     }
@@ -234,20 +253,20 @@ const Storage = {
   // Dentro del objeto Storage, modificar el método saveProject:
   saveProject: function (project) {
     const projects = this.getProjects()
-    
+
     try {
       // Si no tiene ID, es un nuevo proyecto
       if (!project.id) {
         // Generar el ID personalizado
         project.id = this.generateProjectId(project)
-        
+
         // Incrementar contador
         const counter = this.getCounter()
         counter.projects += 1
         this.saveCounter(counter)
-        
+
         projects.push(project)
-        
+
         // Crear notificación
         this.createNotification({
           usuarioId: project.creadorId,
@@ -261,7 +280,7 @@ const Storage = {
         const index = projects.findIndex((p) => p.id === project.id)
         if (index !== -1) {
           projects[index] = project
-          
+
           // Crear notificación
           this.createNotification({
             usuarioId: project.creadorId,
@@ -274,66 +293,61 @@ const Storage = {
           projects.push(project)
         }
       }
-      
+
       localStorage.setItem(this.KEYS.PROJECTS, JSON.stringify(projects))
       return project
-      
     } catch (error) {
       console.error("Error en saveProject:", error)
       throw error // Re-lanzar el error para manejarlo en prst.js
     }
   },
 
-// Añadir este nuevo método al objeto Storage:
-generateProjectId: function(project) {
+  // Añadir este nuevo método al objeto Storage:
+  generateProjectId: function (project) {
     // Obtener el usuario PRST que crea el proyecto
     const creator = this.getUserById(project.creadorId)
     if (!creator || creator.rol !== "prst") {
-        throw new Error("El proyecto debe ser creado por un PRST")
+      throw new Error("El proyecto debe ser creado por un PRST")
     }
-    
+
     // 1. PRST (nombrePRST en mayúsculas, reemplazar espacios con _)
-    const prstPart = creator.nombrePRST 
-        ? creator.nombrePRST.toUpperCase().replace(/\s+/g, '_')
-        : "PRST"
-    
+    const prstPart = creator.nombrePRST ? creator.nombrePRST.toUpperCase().replace(/\s+/g, "_") : "PRST"
+
     // 2. Departamento (código según el departamento del proyecto)
     let deptCode = "UNK"
-    switch(project.departamento?.toUpperCase()) {
-        case "ATLÁNTICO":
-        case "ATLANTICO":
-            deptCode = "ALT"
-            break
-        case "MAGDALENA":
-            deptCode = "MAG"
-            break
-        case "LA GUAJIRA":
-        case "GUAJIRA":
-            deptCode = "LA"
-            break
+    switch (project.departamento?.toUpperCase()) {
+      case "ATLÁNTICO":
+      case "ATLANTICO":
+        deptCode = "ALT"
+        break
+      case "MAGDALENA":
+        deptCode = "MAG"
+        break
+      case "LA GUAJIRA":
+      case "GUAJIRA":
+        deptCode = "LA"
+        break
     }
-    
+
     // 3. Mes y año actual
     const now = new Date()
-    const monthNames = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", 
-                       "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"]
+    const monthNames = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"]
     const monthPart = monthNames[now.getMonth()]
     const yearPart = now.getFullYear()
-    
+
     // 4. Número continuo (contar proyectos existentes con mismo PRST, departamento y periodo)
-    const existingProjects = this.getProjects().filter(p => {
-        const parts = p.id.split('_')
-        return parts.length >= 4 && 
-               parts[0] === prstPart && 
-               parts[1] === deptCode && 
-               parts[2] === `${monthPart}.${yearPart}`
+    const existingProjects = this.getProjects().filter((p) => {
+      const parts = p.id.split("_")
+      return (
+        parts.length >= 4 && parts[0] === prstPart && parts[1] === deptCode && parts[2] === `${monthPart}.${yearPart}`
+      )
     })
-    
+
     const sequentialNumber = existingProjects.length + 1
-    
+
     // Construir el ID completo
     return `${prstPart}_${deptCode}_${monthPart}.${yearPart}_${sequentialNumber}`
-},
+  },
 
   // Eliminar proyecto
   deleteProject: function (id) {
@@ -419,6 +433,12 @@ generateProjectId: function(project) {
   // Guardar contador
   saveCounter: function (counter) {
     localStorage.setItem(this.KEYS.COUNTER, JSON.stringify(counter))
+  },
+
+  // Modify or add the getUserByUsername method to ensure PRST users can log in
+  getUserByUsername: function (username) {
+    const users = this.getUsers()
+    return users.find((user) => user.usuario === username)
   },
 }
 

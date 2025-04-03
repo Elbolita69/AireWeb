@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault()
     mostrarSeccion(seccionSolicitudes)
     actualizarNavActivo(navSolicitudes)
-    cargarSolicitudes()
+    cargarSolicitudesFunc()
   })
 
   cerrarSesion.addEventListener("click", (e) => {
@@ -115,7 +115,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Event listeners para botones
   btnNuevoUsuario.addEventListener("click", abrirModalNuevoUsuario)
   btnNuevoProyecto.addEventListener("click", abrirModalNuevoProyecto)
-  btnGuardarUsuario.addEventListener("click", guardarUsuario)
+  // Comentamos esta línea para evitar duplicar el event listener
+  // btnGuardarUsuario.addEventListener("click", guardarUsuario)
   btnGuardarProyecto.addEventListener("click", guardarProyecto)
   btnGuardarAsignaciones.addEventListener("click", guardarAsignaciones)
   markAllAsRead.addEventListener("click", marcarTodasLeidas)
@@ -127,8 +128,8 @@ document.addEventListener("DOMContentLoaded", () => {
   filtroEstadoProyecto.addEventListener("change", cargarProyectos)
   filtroSectorProyecto.addEventListener("change", cargarProyectos)
   buscarProyecto.addEventListener("input", cargarProyectos)
-  filtroEstadoSolicitud.addEventListener("change", cargarSolicitudes)
-  buscarSolicitud.addEventListener("input", cargarSolicitudes)
+  filtroEstadoSolicitud.addEventListener("change", cargarSolicitudesFunc)
+  buscarSolicitud.addEventListener("input", cargarSolicitudesFunc)
 
   // Event listeners para asignaciones
   sectorAsignacion.addEventListener("change", cargarProyectosPorSector)
@@ -312,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (notif && notif.tipo === "solicitud_password") {
           mostrarSeccion(seccionSolicitudes)
           actualizarNavActivo(navSolicitudes)
-          cargarSolicitudes()
+          cargarSolicitudesFunc()
         }
       })
     })
@@ -325,103 +326,112 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Función para cargar usuarios
+  // Modify the cargarUsuarios function to better display PRST info
   function cargarUsuarios() {
-    const usuarios = Storage.getUsers();
-    const tablaUsuarios = document.getElementById("tablaUsuarios");
-  
+    const usuarios = Storage.getUsers()
+    const tablaUsuarios = document.getElementById("tablaUsuarios")
+
     // Aplicar filtros
-    const rolFiltro = filtroRolUsuario.value;
-    const sectorFiltro = filtroSectorUsuario.value;
-    const busqueda = buscarUsuario.value.toLowerCase();
-  
+    const rolFiltro = filtroRolUsuario.value
+    const sectorFiltro = filtroSectorUsuario.value
+    const busqueda = buscarUsuario.value.toLowerCase()
+
     const usuariosFiltrados = usuarios.filter((usuario) => {
-      const cumpleRol = !rolFiltro || usuario.rol === rolFiltro;
-      const cumpleSector = !sectorFiltro || usuario.sector === sectorFiltro;
+      const cumpleRol = !rolFiltro || usuario.rol === rolFiltro
+      const cumpleSector = !sectorFiltro || usuario.sector === sectorFiltro
       const cumpleBusqueda =
         !busqueda ||
         (usuario.nombre && usuario.nombre.toLowerCase().includes(busqueda)) ||
         (usuario.apellido && usuario.apellido.toLowerCase().includes(busqueda)) ||
         (usuario.usuario && usuario.usuario.toLowerCase().includes(busqueda)) ||
-        (usuario.correo && usuario.correo.toLowerCase().includes(busqueda));
-  
-      return cumpleRol && cumpleSector && cumpleBusqueda;
-    });
-  
+        (usuario.correo && usuario.correo.toLowerCase().includes(busqueda))
+
+      return cumpleRol && cumpleSector && cumpleBusqueda
+    })
+
     // Generar HTML para la tabla
-    let html = "";
+    let html = ""
     usuariosFiltrados.forEach((usuario) => {
       // Determinar el texto del rol y clase del badge
-      let rolTexto = "";
-      let rolBadgeClass = "";
-      
-      switch(usuario.rol) {
+      let rolTexto = ""
+      let rolBadgeClass = ""
+
+      switch (usuario.rol) {
         case "admin":
-          rolTexto = "Administrador";
-          rolBadgeClass = "bg-danger";
-          break;
+          rolTexto = "Administrador"
+          rolBadgeClass = "bg-danger"
+          break
         case "prst":
-          rolTexto = "PRST";
-          rolBadgeClass = "bg-primary";
-          break;
+          rolTexto = "PRST"
+          rolBadgeClass = "bg-primary"
+          break
         case "ejecutiva":
-          rolTexto = "Ejecutiva";
-          rolBadgeClass = "bg-info";
-          break;
+          rolTexto = "Ejecutiva"
+          rolBadgeClass = "bg-info"
+          break
         case "coordinador":
-          rolTexto = "Coordinador";
-          rolBadgeClass = "bg-warning";
-          break;
+          rolTexto = "Coordinador"
+          rolBadgeClass = "bg-warning"
+          break
         case "analista":
-          rolTexto = "Analista";
-          rolBadgeClass = "bg-secondary";
-          break;
+          rolTexto = "Analista"
+          rolBadgeClass = "bg-secondary"
+          break
         case "brigada":
-          rolTexto = "Brigada";
-          rolBadgeClass = "bg-success";
-          break;
+          rolTexto = "Brigada"
+          rolBadgeClass = "bg-success"
+          break
         case "trabajador":
-          rolTexto = "Trabajador";
-          rolBadgeClass = "bg-dark";
-          break;
+          rolTexto = "Trabajador"
+          rolBadgeClass = "bg-dark"
+          break
         default:
-          rolTexto = usuario.rol;
-          rolBadgeClass = "bg-light text-dark";
+          rolTexto = usuario.rol
+          rolBadgeClass = "bg-light text-dark"
       }
-  
+
+      // Determinar qué mostrar en la columna de brigada/PRST
+      let equipoInfo = "N/A"
+      if (usuario.rol === "brigada" && usuario.nombreBrigada) {
+        equipoInfo = usuario.nombreBrigada
+      } else if (usuario.rol === "prst" && usuario.nombrePRST) {
+        equipoInfo = usuario.nombrePRST
+      }
+
       html += `
-        <tr>
-          <td>${usuario.id}</td>
-          <td>${usuario.nombre} ${usuario.apellido || ""}</td>
-          <td>${usuario.usuario}</td>
-          <td>${usuario.correo}</td>
-          <td>
-            <span class="badge ${rolBadgeClass}">
-              ${rolTexto}
-            </span>
-          </td>
-          <td>${usuario.nombreBrigada || usuario.nombrePRST || "N/A"}</td>
-          <td>${usuario.sector || "N/A"}</td>
-          <td>
-            <button class="btn btn-sm btn-primary me-1" onclick="editarUsuario('${usuario.id}')">
-              <i class="bi bi-pencil"></i>
-            </button>
-            <button class="btn btn-sm btn-danger" onclick="eliminarUsuario('${usuario.id}')">
-              <i class="bi bi-trash"></i>
-            </button>
-          </td>
-        </tr>
-      `;
-    });
-  
+      <tr>
+        <td>${usuario.id}</td>
+        <td>${usuario.nombre} ${usuario.apellido || ""}</td>
+        <td>${usuario.usuario}</td>
+        <td>${usuario.correo}</td>
+        <td>
+          <span class="badge ${rolBadgeClass}">
+            ${rolTexto}
+          </span>
+        </td>
+        <td>${equipoInfo}</td>
+        <td>${usuario.sector || "N/A"}</td>
+        <td>
+          <button class="btn btn-sm btn-primary me-1" onclick="editarUsuario('${usuario.id}')">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="eliminarUsuario('${usuario.id}')">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `
+    })
+
     if (usuariosFiltrados.length === 0) {
       html = `
-        <tr>
-          <td colspan="8" class="text-center">No se encontraron usuarios</td>
-        </tr>
-      `;
+      <tr>
+        <td colspan="8" class="text-center">No se encontraron usuarios</td>
+      </tr>
+    `
     }
-  
-    tablaUsuarios.innerHTML = html;
+
+    tablaUsuarios.innerHTML = html
   }
 
   // Función para abrir modal de nuevo usuario
@@ -435,19 +445,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Función para guardar usuario
+  // Modify the guardarUsuario function to ensure it works correctly
+  // and is available globally
+
+  // Replace the existing guardarUsuario function with this version
+  // Función para guardar usuario - versión mejorada con logs para depuración
   function guardarUsuario() {
-    const form = document.getElementById("formUsuario");
-  
+    console.log("Función guardarUsuario ejecutada")
+
+    const form = document.getElementById("formUsuario")
     if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
+      form.reportValidity()
+      return
     }
-  
-    const usuarioId = document.getElementById("usuarioId").value;
+
+    const usuarioId = document.getElementById("usuarioId").value
+    console.log("ID de usuario:", usuarioId)
+
     const usuario = {
       id: usuarioId || null,
       nombre: document.getElementById("nombre").value,
-      apellido: document.getElementById("apellido").value || "",
       nombreBrigada: document.getElementById("nombreBrigada").value || "",
       cargo: document.getElementById("cargo").value || "",
       correo: document.getElementById("correo").value,
@@ -455,46 +472,92 @@ document.addEventListener("DOMContentLoaded", () => {
       password: document.getElementById("password").value,
       rol: document.getElementById("rol").value,
       sector: document.getElementById("sector").value || "",
-      activo: true
-    };
-  
-    // Campos específicos por rol
+      activo: true,
+    }
+
+    console.log("Datos del usuario a guardar:", usuario)
+
+    // Add PRST specific field if role is prst
     if (usuario.rol === "prst") {
-      usuario.nombrePRST = document.getElementById("nombrePRST").value || "";
-      usuario.cedula = document.getElementById("cedula").value || "";
-      usuario.matriculaProfesional = document.getElementById("matriculaProfesional").value || "";
-    } else if (usuario.rol === "coordinador") {
-      usuario.tipoCoordinador = document.getElementById("tipoCoordinador").value || "";
+      usuario.nombrePRST = document.getElementById("prstUsuario").value || ""
+      console.log("Campo PRST añadido:", usuario.nombrePRST)
     }
-  
-    // Verificar si ya existe un usuario con ese nombre de usuario o correo
-    const usuarios = Storage.getUsers();
-    const usuarioExistente = usuarios.find((u) => u.usuario === usuario.usuario && (!usuarioId || u.id !== usuarioId));
-    const correoExistente = usuarios.find((u) => u.correo === usuario.correo && (!usuarioId || u.id !== usuarioId));
-  
-    if (usuarioExistente) {
-      mostrarMensaje("Error", "Ya existe un usuario con ese nombre de usuario.");
-      return;
+
+    try {
+      // Verificar si ya existe un usuario con ese nombre de usuario o correo
+      const usuarios = Storage.getUsers()
+      console.log("Usuarios existentes:", usuarios)
+
+      const usuarioExistente = usuarios.find((u) => u.usuario === usuario.usuario && (!usuarioId || u.id !== usuarioId))
+      const correoExistente = usuarios.find((u) => u.correo === usuario.correo && (!usuarioId || u.id !== usuarioId))
+
+      if (usuarioExistente) {
+        console.log("Usuario existente encontrado:", usuarioExistente)
+        mostrarMensaje("Error", "Ya existe un usuario con ese nombre de usuario.")
+        return
+      }
+
+      if (correoExistente) {
+        console.log("Correo existente encontrado:", correoExistente)
+        mostrarMensaje("Error", "Ya existe un usuario con ese correo electrónico.")
+        return
+      }
+
+      // Guardar usuario directamente en localStorage si Storage.saveUser falla
+      try {
+        console.log("Intentando guardar usuario con Storage.saveUser")
+        Storage.saveUser(usuario)
+      } catch (error) {
+        console.error("Error al guardar con Storage.saveUser:", error)
+
+        // Método alternativo: guardar directamente en localStorage
+        console.log("Intentando guardar directamente en localStorage")
+        const usuariosActuales = JSON.parse(localStorage.getItem("air_e_users") || "[]")
+
+        if (!usuario.id) {
+          // Es un nuevo usuario, generar ID
+          const counter = JSON.parse(localStorage.getItem("air_e_counter") || '{"users":10}')
+          usuario.id = (++counter.users).toString()
+          localStorage.setItem("air_e_counter", JSON.stringify(counter))
+          usuariosActuales.push(usuario)
+        } else {
+          // Actualizar usuario existente
+          const index = usuariosActuales.findIndex((u) => u.id === usuario.id)
+          if (index !== -1) {
+            usuariosActuales[index] = usuario
+          } else {
+            usuariosActuales.push(usuario)
+          }
+        }
+
+        localStorage.setItem("air_e_users", JSON.stringify(usuariosActuales))
+      }
+
+      console.log("Usuario guardado exitosamente")
+
+      // Cerrar modal
+      const modalUsuario = bootstrap.Modal.getInstance(document.getElementById("modalUsuario"))
+      if (modalUsuario) {
+        modalUsuario.hide()
+      } else {
+        console.error("No se pudo obtener la instancia del modal")
+        document.getElementById("modalUsuario").style.display = "none"
+        document.querySelector(".modal-backdrop")?.remove()
+      }
+
+      // Recargar tabla
+      cargarUsuarios()
+
+      // Mostrar mensaje
+      mostrarMensaje("Éxito", `Usuario ${usuarioId ? "actualizado" : "creado"} correctamente.`)
+    } catch (error) {
+      console.error("Error en la función guardarUsuario:", error)
+      alert("Error al guardar el usuario: " + error.message)
     }
-  
-    if (correoExistente) {
-      mostrarMensaje("Error", "Ya existe un usuario con ese correo electrónico.");
-      return;
-    }
-  
-    // Guardar usuario
-    Storage.saveUser(usuario);
-  
-    // Cerrar modal
-    const modalUsuario = bootstrap.Modal.getInstance(document.getElementById("modalUsuario"));
-    modalUsuario.hide();
-  
-    // Recargar tabla
-    cargarUsuarios();
-  
-    // Mostrar mensaje
-    mostrarMensaje("Éxito", `Usuario ${usuarioId ? "actualizado" : "creado"} correctamente.`);
   }
+
+  // Make the function available globally
+  window.guardarUsuario = guardarUsuario
 
   // Función para cargar proyectos
   function cargarProyectos() {
@@ -599,7 +662,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Función para cargar proyectos
   // Modificar la función cargarProyectos para asegurar que se muestre el PRST
-  function cargarProyectos() {
+  function cargarProyectosFunc() {
     const proyectos = Storage.getProjects()
     const tablaProyectos = document.getElementById("tablaProyectos")
 
@@ -805,7 +868,7 @@ document.addEventListener("DOMContentLoaded", () => {
             modalProyecto.hide()
 
             // Recargar tabla
-            cargarProyectos()
+            cargarProyectosFunc()
 
             // Mostrar mensaje
             mostrarMensaje("Éxito", `Proyecto ${proyectoId ? "actualizado" : "creado"} correctamente.`)
@@ -844,7 +907,7 @@ document.addEventListener("DOMContentLoaded", () => {
             modalProyecto.hide()
 
             // Recargar tabla
-            cargarProyectos()
+            cargarProyectosFunc()
 
             // Mostrar mensaje
             mostrarMensaje("Éxito", `Proyecto ${proyectoId ? "actualizado" : "creado"} correctamente.`)
@@ -869,7 +932,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modalProyecto.hide()
 
       // Recargar tabla
-      cargarProyectos()
+      cargarProyectosFunc()
 
       // Mostrar mensaje
       mostrarMensaje("Éxito", `Proyecto ${proyectoId ? "actualizado" : "creado"} correctamente.`)
@@ -1083,7 +1146,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Función para cargar solicitudes de cambio de contraseña
-  function cargarSolicitudes() {
+  function cargarSolicitudesFunc() {
     const solicitudes = Storage.getPasswordRequests()
     const listaSolicitudes = document.getElementById("listaSolicitudes")
     const sinSolicitudes = document.getElementById("sinSolicitudes")
@@ -1268,7 +1331,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modalProcesarSolicitud.hide()
 
       // Recargar solicitudes
-      cargarSolicitudes()
+      cargarSolicitudesFunc()
 
       // Mostrar mensaje
       mostrarMensaje("Éxito", "Solicitud aprobada correctamente.")
@@ -1284,7 +1347,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (resultado) {
         // Recargar solicitudes
-        cargarSolicitudes()
+        cargarSolicitudesFunc()
 
         // Mostrar mensaje
         mostrarMensaje("Éxito", "Solicitud rechazada correctamente.")
@@ -1529,61 +1592,61 @@ document.addEventListener("DOMContentLoaded", () => {
   window.eliminarProyecto = (id) => {
     if (confirm("¿Está seguro de que desea eliminar este proyecto?")) {
       Storage.deleteProject(id)
-      cargarProyectos()
+      cargarProyectosFunc()
       mostrarMensaje("Éxito", "Proyecto eliminado correctamente.")
     }
   }
 
   // Función para editar usuario
   window.editarUsuario = (id) => {
-    const usuario = Storage.getUserById(id);
-  
+    const usuario = Storage.getUserById(id)
+
     if (!usuario) {
-      mostrarMensaje("Error", "Usuario no encontrado.");
-      return;
+      mostrarMensaje("Error", "Usuario no encontrado.")
+      return
     }
-  
-    document.getElementById("tituloModalUsuario").textContent = "Editar Usuario";
-    document.getElementById("usuarioId").value = usuario.id;
-    document.getElementById("nombre").value = usuario.nombre;
-    document.getElementById("apellido").value = usuario.apellido || "";
-    document.getElementById("nombreBrigada").value = usuario.nombreBrigada || "";
-    document.getElementById("cargo").value = usuario.cargo || "";
-    document.getElementById("correo").value = usuario.correo;
-    document.getElementById("usuario").value = usuario.usuario;
-    document.getElementById("password").value = usuario.password;
-    document.getElementById("rol").value = usuario.rol;
-    document.getElementById("sector").value = usuario.sector || "";
-  
+
+    document.getElementById("tituloModalUsuario").textContent = "Editar Usuario"
+    document.getElementById("usuarioId").value = usuario.id
+    document.getElementById("nombre").value = usuario.nombre
+    document.getElementById("apellido").value = usuario.apellido || ""
+    document.getElementById("nombreBrigada").value = usuario.nombreBrigada || ""
+    document.getElementById("cargo").value = usuario.cargo || ""
+    document.getElementById("correo").value = usuario.correo
+    document.getElementById("usuario").value = usuario.usuario
+    document.getElementById("password").value = usuario.password
+    document.getElementById("rol").value = usuario.rol
+    document.getElementById("sector").value = usuario.sector || ""
+
     // Mostrar campos específicos por rol
     if (usuario.rol === "prst") {
-      document.getElementById("nombrePRST").value = usuario.nombrePRST || "";
-      document.getElementById("cedula").value = usuario.cedula || "";
-      document.getElementById("matriculaProfesional").value = usuario.matriculaProfesional || "";
+      document.getElementById("nombrePRST").value = usuario.nombrePRST || ""
+      document.getElementById("cedula").value = usuario.cedula || ""
+      document.getElementById("matriculaProfesional").value = usuario.matriculaProfesional || ""
     } else if (usuario.rol === "coordinador") {
-      document.getElementById("tipoCoordinador").value = usuario.tipoCoordinador || "";
+      document.getElementById("tipoCoordinador").value = usuario.tipoCoordinador || ""
     }
-  
-    const modalUsuario = new bootstrap.Modal(document.getElementById("modalUsuario"));
-    modalUsuario.show();
-  };
 
-  document.getElementById("rol").addEventListener("change", function() {
-    const rol = this.value;
-    const camposPRST = document.getElementById("camposPRST");
-    const camposCoordinador = document.getElementById("camposCoordinador");
-    
+    const modalUsuario = new bootstrap.Modal(document.getElementById("modalUsuario"))
+    modalUsuario.show()
+  }
+
+  document.getElementById("rol").addEventListener("change", function () {
+    const rol = this.value
+    const camposPRST = document.getElementById("camposPRST")
+    const camposCoordinador = document.getElementById("camposCoordinador")
+
     // Ocultar todos los campos específicos primero
-    camposPRST.style.display = "none";
-    camposCoordinador.style.display = "none";
-    
+    camposPRST.style.display = "none"
+    camposCoordinador.style.display = "none"
+
     // Mostrar los campos correspondientes al rol seleccionado
     if (rol === "prst") {
-      camposPRST.style.display = "block";
+      camposPRST.style.display = "block"
     } else if (rol === "coordinador") {
-      camposCoordinador.style.display = "block";
+      camposCoordinador.style.display = "block"
     }
-  });
+  })
 
   // Función para eliminar usuario
   window.eliminarUsuario = (id) => {
@@ -1635,6 +1698,27 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
+  // Add this to the DOMContentLoaded event listener to handle role changes
+  // Role select change handler
+  const rolSelect2 = document.getElementById("rol")
+  const sectorField2 = document.getElementById("sectorContainer")
+  const prstField = document.getElementById("prstContainer")
+
+  if (rolSelect2) {
+    rolSelect2.addEventListener("change", function () {
+      // Hide all role-specific fields first
+      if (sectorField2) sectorField2.style.display = "none"
+      if (prstField) prstField.style.display = "none"
+
+      // Show the appropriate field based on role
+      if (this.value === "brigada") {
+        if (sectorField2) sectorField2.style.display = "block"
+      } else if (this.value === "prst") {
+        if (prstField) prstField.style.display = "block"
+      }
+    })
+  }
+
   // Fix the accept and reject buttons in password requests section
   window.rechazarSolicitudFuncion = (id) => {
     if (confirm("¿Está seguro de que desea rechazar esta solicitud?")) {
@@ -1642,7 +1726,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (resultado) {
         // Recargar solicitudes
-        cargarSolicitudes()
+        cargarSolicitudesFunc()
 
         // Mostrar mensaje
         mostrarMensaje("Éxito", "Solicitud rechazada correctamente.")
@@ -1654,108 +1738,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Fix filter functionality in admin panel
   // Enhance the filter for password requests
-  document.getElementById("filtroEstadoSolicitud").addEventListener("change", cargarSolicitudes)
-  document.getElementById("buscarSolicitud").addEventListener("input", cargarSolicitudes)
-
-  // Enhanced function to load password requests with filtering
-  function cargarSolicitudes() {
-    const solicitudes = Storage.getPasswordRequests()
-    const listaSolicitudes = document.getElementById("listaSolicitudes")
-    const sinSolicitudes = document.getElementById("sinSolicitudes")
-
-    // Apply filters
-    const estadoFiltro = document.getElementById("filtroEstadoSolicitud").value
-    const busqueda = document.getElementById("buscarSolicitud").value.toLowerCase()
-
-    // Only show pending requests unless a filter is specified
-    const solicitudesFiltradas = solicitudes.filter((solicitud) => {
-      // If no status filter, show only pending
-      const cumpleEstado = estadoFiltro ? solicitud.estado === estadoFiltro : solicitud.estado === "pendiente"
-
-      // Get user for search
-      const usuario = Storage.getUserByUsername(solicitud.nombreUsuario)
-
-      const cumpleBusqueda =
-        !busqueda ||
-        solicitud.nombreUsuario.toLowerCase().includes(busqueda) ||
-        solicitud.correoUsuario.toLowerCase().includes(busqueda) ||
-        (usuario && usuario.nombre.toLowerCase().includes(busqueda))
-
-      return cumpleEstado && cumpleBusqueda
-    })
-
-    // Sort by date (newest first)
-    solicitudesFiltradas.sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion))
-
-    // Show or hide "no requests" message
-    if (solicitudesFiltradas.length === 0) {
-      sinSolicitudes.style.display = "block"
-      listaSolicitudes.innerHTML = ""
-      return
-    } else {
-      sinSolicitudes.style.display = "none"
-    }
-
-    // Generate HTML for requests
-    let html = ""
-    solicitudesFiltradas.forEach((solicitud) => {
-      const usuario = Storage.getUserByUsername(solicitud.nombreUsuario)
-      const fecha = new Date(solicitud.fechaCreacion)
-      const fechaFormateada = fecha.toLocaleDateString() + " " + fecha.toLocaleTimeString()
-
-      let estadoClase = "pending"
-      let estadoTexto = "Pendiente"
-      let estadoBadge = "bg-warning"
-
-      if (solicitud.estado === "aprobada") {
-        estadoClase = "approved"
-        estadoTexto = "Aprobada"
-        estadoBadge = "bg-success"
-      } else if (solicitud.estado === "rechazada") {
-        estadoClase = "rejected"
-        estadoTexto = "Rechazada"
-        estadoBadge = "bg-danger"
-      }
-
-      html += `
-      <div class="card password-request-card ${estadoClase}">
-        <div class="password-request-header">
-          <h6 class="mb-0">Solicitud de ${usuario ? usuario.nombre : solicitud.nombreUsuario}</h6>
-          <span class="badge ${estadoBadge}">${estadoTexto}</span>
-        </div>
-        <div class="password-request-body">
-          <div class="row">
-            <div class="col-md-6">
-              <p><strong>Usuario:</strong> ${solicitud.nombreUsuario}</p>
-              <p><strong>Correo:</strong> ${solicitud.correoUsuario}</p>
-              <p><strong>Fecha:</strong> ${fechaFormateada}</p>
-            </div>
-            <div class="col-md-6">
-              <p><strong>Motivo:</strong></p>
-              <p class="text-muted">${solicitud.motivo || "No especificado"}</p>
-            </div>
-          </div>
-        </div>
-    `
-
-      // Only show action buttons for pending requests
-      if (solicitud.estado === "pendiente") {
-        html += `
-        <div class="password-request-footer">
-          <button class="btn btn-danger" onclick="rechazarSolicitudFuncion('${solicitud.id}')">
-            <i class="bi bi-x-circle"></i> Rechazar
-          </button>
-          <button class="btn btn-success" onclick="procesarSolicitud('${solicitud.id}')">
-            <i class="bi bi-check-circle"></i> Procesar
-          </button>
-        </div>
-      `
-      }
-
-      html += `</div>`
-    })
-
-    listaSolicitudes.innerHTML = html
-  }
+  document.getElementById("filtroEstadoSolicitud").addEventListener("change", cargarSolicitudesFunc)
+  document.getElementById("buscarSolicitud").addEventListener("input", cargarSolicitudesFunc)
 })
 

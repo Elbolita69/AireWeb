@@ -325,7 +325,6 @@
               </div>
             </div>
             <div class="table-responsive">
-              <!-- Añadir la columna "Cantidad de Postes" en la tabla de proyectos -->
               <table class="table table-striped table-hover">
                 <thead>
                   <tr>
@@ -456,6 +455,8 @@
   </div>
 
   <!-- Modal para crear/editar usuario -->
+  
+  <!-- Modificar el Modal para crear/editar usuario -->
   <div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -503,9 +504,126 @@
                 <option value="trabajador">Trabajador</option>
               </select>
             </div>
-            <div class="mb-3">
+            
+            <!-- Campo PRST (se muestra solo cuando el rol es PRST) -->
+            <div class="mb-3" id="prstContainer" style="display: none;">
+              <label for="prstUsuario" class="form-label">PRST</label>
+              <input type="text" class="form-control" id="prstUsuario" list="prstOptionsUsuario" placeholder="Escriba para buscar...">
+              <datalist id="prstOptionsUsuario">
+                <option value="AIRE">
+                <option value="AIRTEK CARRIER SERVICES">
+                <option value="MUNICIPAL DE MAICAO">
+                <option value="TOTAL CONEXION">
+                <option value="APC LINK">
+                <option value="AUDICOL">
+                <option value="AWATA WIRELESS">
+                <option value="AZTECA">
+                <option value="MEGATEL">
+                <option value="CABLE EXPRESS">
+                <option value="CABLE GUAJIRA LTDA">
+                <option value="CABLE HOGAR.NET">
+                <option value="CAFETEL COMMUNICATIONS GROUP">
+                <option value="CARIBE INTERCOMUNICACIONES">
+                <option value="CARIBETECH">
+                <option value="CIRION TECHNOLOGIES COLOMBIA">
+                <option value="MOVISTAR">
+                <option value="COMUNET TELECOMUNICACIONES">
+                <option value="CLARO">
+                <option value="CLARO-S">
+                <option value="COMUNICACIONES TERRESTRES DE COLOMBIA">
+                <option value="CONETTA">
+                <option value="CGVE">
+                <option value="DATA LAN">
+                <option value="Dialnet">
+                <option value="DIGITAL COAST">
+                <option value="DIGITVNET">
+                <option value="DRACO NET">
+                <option value="ECONEXION">
+                <option value="ELECNORTE SAS ESP">
+                <option value="EME INGENIERIA S.A.">
+                <option value="ETB">
+                <option value="COSTATEL">
+                <option value="ENERGIZANDO - INGENIERÍA Y CONSTRUCCIÓN">
+                <option value="FIBER FAST">
+                <option value="FIBERCOMM">
+                <option value="FIBERLINK COMUNICACIONES">
+                <option value="FIBRAXO">
+                <option value="ELECNORTE">
+                <option value="GTD">
+                <option value="GUAJIRANET ISP">
+                <option value="TVNET">
+                <option value="IMB INGENIERIA EN REDES">
+                <option value="INTEGRA MULTISOLUTIONS">
+                <option value="INTELEXA DE COLOMBIA">
+                <option value="INTER REDES DEL MAGDALENA">
+                <option value="INTERCABLE">
+                <option value="INTERCAR.NET">
+                <option value="CABLE EXITO">
+                <option value="ISA">
+                <option value="INTERCONEXIONES TECNOLOGICAS DEL CARIBE SAS (INTERCON)">
+                <option value="INTERCOSTA">
+                <option value="INTERNET Y TELECOMUNICACIONES DE COLOMBIA">
+                <option value="INTERNEXA">
+                <option value="INTERNEXT">
+                <option value="INTERTEL SATELITAL">
+                <option value="INVERSIONES ACOSTA VERGARA">
+                <option value="INVERSIONES RODRIGUEZ MEJIA">
+                <option value="IST INGENIERIA Y SOLUCIONES TECNOLOGICAS">
+                <option value="POLICIA NACIONAL">
+                <option value="ITELKOM">
+                <option value="JALU SOLUCIONES">
+                <option value="JHOSDY TELECOMUNICACIONES">
+                <option value="C&W Network">
+                <option value="LOGISTICA EN TELECOMUNICACIONES">
+                <option value="MACITEL">
+                <option value="MAOTECH TELECOMUNICACIONES">
+                <option value="MEDIA COMMERCE">
+                <option value="MEGA TV">
+                <option value="NOVACLICK">
+                <option value="O2 ONLINE">
+                <option value="ONNET">
+                <option value="WOM">
+                <option value="PLUSNET">
+                <option value="PRODATEL">
+                <option value="PROMO VISIÓN">
+                <option value="QUEST TELECOM">
+                <option value="R&R TELECOMUNICACIONES">
+                <option value="RAPILINK">
+                <option value="REDES TELECOMUNICACIONES DIGITALES DE COLOMBIA">
+                <option value="SAVASA SOLUCIONES INTEGRALES">
+                <option value="DATASET">
+                <option value="SERVICIOS INTEGRALES PERSONALIZADOS">
+                <option value="SERVICOM J&E">
+                <option value="SERVISOLUCIONES JM">
+                <option value="SIN IDENTIFICAR">
+                <option value="SMK DUO CONEXCION">
+                <option value="SOLUCIONES DANTEL">
+                <option value="E-VOLT TECK">
+                <option value="SEGITEL">
+                <option value="SOLUNET DIGITAL">
+                <option value="SPACE COMUNICACIONES">
+                <option value="STARCOM CARIBE">
+                <option value="SUPERCABLE TELECOMUNICACIONES">
+                <option value="TELECOMUNICACIONES ZONA BANANERA">
+                <option value="TIRIAN TELECOMUNICACIONES">
+                <option value="TOP LINK">
+                <option value="TUNORTETV TELECOMUNICACIONES">
+                <option value="TV COMUNICACIONES JL">
+                <option value="TV LINE">
+                <option value="TV ZONA BANANERA">
+                <option value="UFINET">
+                <option value="TIGO">
+                <option value="VENTELCO">
+                <option value="VYC NETWORKS">
+                <option value="WAYIRANET">
+                <option value="WIPA">
+              </datalist>
+            </div>
+            
+            <!-- Campo Sector (se muestra solo cuando el rol es Brigada) -->
+            <div class="mb-3" id="sectorContainer" style="display: none;">
               <label for="sector" class="form-label">Sector</label>
-              <select class="form-select" id="sector" required>
+              <select class="form-select" id="sector">
                 <option value="">Seleccionar</option>
                 <option value="Norte">Norte</option>
                 <option value="Sur">Sur</option>
@@ -525,40 +643,8 @@
     </div>
   </div>
 
-
-  <!-- Campos para PRST -->
-<div id="camposPRST" style="display: none;">
-  <div class="mb-3">
-    <label for="nombrePRST" class="form-label">Nombre del PRST</label>
-    <input type="text" class="form-control" id="nombrePRST">
-  </div>
-  <div class="mb-3">
-    <label for="cedula" class="form-label">Cédula</label>
-    <input type="text" class="form-control" id="cedula">
-  </div>
-  <div class="mb-3">
-    <label for="matriculaProfesional" class="form-label">Matrícula Profesional</label>
-    <input type="text" class="form-control" id="matriculaProfesional">
-  </div>
-</div>
-
-<!-- Campos para Coordinador -->
-<div id="camposCoordinador" style="display: none;">
-  <div class="mb-3">
-    <label for="tipoCoordinador" class="form-label">Tipo de Coordinador</label>
-    <select class="form-select" id="tipoCoordinador">
-      <option value="">Seleccionar</option>
-      <option value="administrativo">Administrativo</option>
-      <option value="operativo">Operativo</option>
-      <option value="censo">Censo</option>
-    </select>
-  </div>
-</div>
-
-
   <!-- Modal para crear/editar proyecto -->
-  
-<div class="modal fade" id="modalProyecto" tabindex="-1" aria-hidden="true">
+  <div class="modal fade" id="modalProyecto" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header bg-primary text-white">
@@ -578,122 +664,119 @@
                   <label for="descripcion" class="form-label">Descripción</label>
                   <textarea class="form-control" id="descripcion" rows="3"></textarea>
                 </div>
-                <!-- Buscar el modal de nuevo proyecto y agregar el campo PRST solicitante -->
-<!-- Dentro del modal de nuevo proyecto, antes del campo de estado -->
-
-<div class="mb-3">
- <label for="prst" class="form-label">PRST</label>
- <input type="text" class="form-control" id="prst" list="prstOptions" placeholder="Escriba para buscar...">
- <datalist id="prstOptions">
-   <option value="AIRE">
-   <option value="AIRTEK CARRIER SERVICES">
-   <option value="MUNICIPAL DE MAICAO">
-   <option value="TOTAL CONEXION">
-   <option value="APC LINK">
-   <option value="AUDICOL">
-   <option value="AWATA WIRELESS">
-   <option value="AZTECA">
-   <option value="MEGATEL">
-   <option value="CABLE EXPRESS">
-   <option value="CABLE GUAJIRA LTDA">
-   <option value="CABLE HOGAR.NET">
-   <option value="CAFETEL COMMUNICATIONS GROUP">
-   <option value="CARIBE INTERCOMUNICACIONES">
-   <option value="CARIBETECH">
-   <option value="CIRION TECHNOLOGIES COLOMBIA">
-   <option value="MOVISTAR">
-   <option value="COMUNET TELECOMUNICACIONES">
-   <option value="CLARO">
-   <option value="CLARO-S">
-   <option value="COMUNICACIONES TERRESTRES DE COLOMBIA">
-   <option value="CONETTA">
-   <option value="CGVE">
-   <option value="DATA LAN">
-   <option value="Dialnet">
-   <option value="DIGITAL COAST">
-   <option value="DIGITVNET">
-   <option value="DRACO NET">
-   <option value="ECONEXION">
-   <option value="ELECNORTE SAS ESP">
-   <option value="EME INGENIERIA S.A.">
-   <option value="ETB">
-   <option value="COSTATEL">
-   <option value="ENERGIZANDO - INGENIERÍA Y CONSTRUCCIÓN">
-   <option value="FIBER FAST">
-   <option value="FIBERCOMM">
-   <option value="FIBERLINK COMUNICACIONES">
-   <option value="FIBRAXO">
-   <option value="ELECNORTE">
-   <option value="GTD">
-   <option value="GUAJIRANET ISP">
-   <option value="TVNET">
-   <option value="IMB INGENIERIA EN REDES">
-   <option value="INTEGRA MULTISOLUTIONS">
-   <option value="INTELEXA DE COLOMBIA">
-   <option value="INTER REDES DEL MAGDALENA">
-   <option value="INTERCABLE">
-   <option value="INTERCAR.NET">
-   <option value="CABLE EXITO">
-   <option value="ISA">
-   <option value="INTERCONEXIONES TECNOLOGICAS DEL CARIBE SAS (INTERCON)">
-   <option value="INTERCOSTA">
-   <option value="INTERNET Y TELECOMUNICACIONES DE COLOMBIA">
-   <option value="INTERNEXA">
-   <option value="INTERNEXT">
-   <option value="INTERTEL SATELITAL">
-   <option value="INVERSIONES ACOSTA VERGARA">
-   <option value="INVERSIONES RODRIGUEZ MEJIA">
-   <option value="IST INGENIERIA Y SOLUCIONES TECNOLOGICAS">
-   <option value="POLICIA NACIONAL">
-   <option value="ITELKOM">
-   <option value="JALU SOLUCIONES">
-   <option value="JHOSDY TELECOMUNICACIONES">
-   <option value="C&W Network">
-   <option value="LOGISTICA EN TELECOMUNICACIONES">
-   <option value="MACITEL">
-   <option value="MAOTECH TELECOMUNICACIONES">
-   <option value="MEDIA COMMERCE">
-   <option value="MEGA TV">
-   <option value="NOVACLICK">
-   <option value="O2 ONLINE">
-   <option value="ONNET">
-   <option value="WOM">
-   <option value="PLUSNET">
-   <option value="PRODATEL">
-   <option value="PROMO VISIÓN">
-   <option value="QUEST TELECOM">
-   <option value="R&R TELECOMUNICACIONES">
-   <option value="RAPILINK">
-   <option value="REDES TELECOMUNICACIONES DIGITALES DE COLOMBIA">
-   <option value="SAVASA SOLUCIONES INTEGRALES">
-   <option value="DATASET">
-   <option value="SERVICIOS INTEGRALES PERSONALIZADOS">
-   <option value="SERVICOM J&E">
-   <option value="SERVISOLUCIONES JM">
-   <option value="SIN IDENTIFICAR">
-   <option value="SMK DUO CONEXCION">
-   <option value="SOLUCIONES DANTEL">
-   <option value="E-VOLT TECK">
-   <option value="SEGITEL">
-   <option value="SOLUNET DIGITAL">
-   <option value="SPACE COMUNICACIONES">
-   <option value="STARCOM CARIBE">
-   <option value="SUPERCABLE TELECOMUNICACIONES">
-   <option value="TELECOMUNICACIONES ZONA BANANERA">
-   <option value="TIRIAN TELECOMUNICACIONES">
-   <option value="TOP LINK">
-   <option value="TUNORTETV TELECOMUNICACIONES">
-   <option value="TV COMUNICACIONES JL">
-   <option value="TV LINE">
-   <option value="TV ZONA BANANERA">
-   <option value="UFINET">
-   <option value="TIGO">
-   <option value="VENTELCO">
-   <option value="VYC NETWORKS">
-   <option value="WAYIRANET">
-   <option value="WIPA">
- </datalist>
-</div>
+                <div class="mb-3">
+                  <label for="prst" class="form-label">PRST</label>
+                  <input type="text" class="form-control" id="prst" list="prstOptions" placeholder="Escriba para buscar...">
+                  <datalist id="prstOptions">
+                    <option value="AIRE">
+                    <option value="AIRTEK CARRIER SERVICES">
+                    <option value="MUNICIPAL DE MAICAO">
+                    <option value="TOTAL CONEXION">
+                    <option value="APC LINK">
+                    <option value="AUDICOL">
+                    <option value="AWATA WIRELESS">
+                    <option value="AZTECA">
+                    <option value="MEGATEL">
+                    <option value="CABLE EXPRESS">
+                    <option value="CABLE GUAJIRA LTDA">
+                    <option value="CABLE HOGAR.NET">
+                    <option value="CAFETEL COMMUNICATIONS GROUP">
+                    <option value="CARIBE INTERCOMUNICACIONES">
+                    <option value="CARIBETECH">
+                    <option value="CIRION TECHNOLOGIES COLOMBIA">
+                    <option value="MOVISTAR">
+                    <option value="COMUNET TELECOMUNICACIONES">
+                    <option value="CLARO">
+                    <option value="CLARO-S">
+                    <option value="COMUNICACIONES TERRESTRES DE COLOMBIA">
+                    <option value="CONETTA">
+                    <option value="CGVE">
+                    <option value="DATA LAN">
+                    <option value="Dialnet">
+                    <option value="DIGITAL COAST">
+                    <option value="DIGITVNET">
+                    <option value="DRACO NET">
+                    <option value="ECONEXION">
+                    <option value="ELECNORTE SAS ESP">
+                    <option value="EME INGENIERIA S.A.">
+                    <option value="ETB">
+                    <option value="COSTATEL">
+                    <option value="ENERGIZANDO - INGENIERÍA Y CONSTRUCCIÓN">
+                    <option value="FIBER FAST">
+                    <option value="FIBERCOMM">
+                    <option value="FIBERLINK COMUNICACIONES">
+                    <option value="FIBRAXO">
+                    <option value="ELECNORTE">
+                    <option value="GTD">
+                    <option value="GUAJIRANET ISP">
+                    <option value="TVNET">
+                    <option value="IMB INGENIERIA EN REDES">
+                    <option value="INTEGRA MULTISOLUTIONS">
+                    <option value="INTELEXA DE COLOMBIA">
+                    <option value="INTER REDES DEL MAGDALENA">
+                    <option value="INTERCABLE">
+                    <option value="INTERCAR.NET">
+                    <option value="CABLE EXITO">
+                    <option value="ISA">
+                    <option value="INTERCONEXIONES TECNOLOGICAS DEL CARIBE SAS (INTERCON)">
+                    <option value="INTERCOSTA">
+                    <option value="INTERNET Y TELECOMUNICACIONES DE COLOMBIA">
+                    <option value="INTERNEXA">
+                    <option value="INTERNEXT">
+                    <option value="INTERTEL SATELITAL">
+                    <option value="INVERSIONES ACOSTA VERGARA">
+                    <option value="INVERSIONES RODRIGUEZ MEJIA">
+                    <option value="IST INGENIERIA Y SOLUCIONES TECNOLOGICAS">
+                    <option value="POLICIA NACIONAL">
+                    <option value="ITELKOM">
+                    <option value="JALU SOLUCIONES">
+                    <option value="JHOSDY TELECOMUNICACIONES">
+                    <option value="C&W Network">
+                    <option value="LOGISTICA EN TELECOMUNICACIONES">
+                    <option value="MACITEL">
+                    <option value="MAOTECH TELECOMUNICACIONES">
+                    <option value="MEDIA COMMERCE">
+                    <option value="MEGA TV">
+                    <option value="NOVACLICK">
+                    <option value="O2 ONLINE">
+                    <option value="ONNET">
+                    <option value="WOM">
+                    <option value="PLUSNET">
+                    <option value="PRODATEL">
+                    <option value="PROMO VISIÓN">
+                    <option value="QUEST TELECOM">
+                    <option value="R&R TELECOMUNICACIONES">
+                    <option value="RAPILINK">
+                    <option value="REDES TELECOMUNICACIONES DIGITALES DE COLOMBIA">
+                    <option value="SAVASA SOLUCIONES INTEGRALES">
+                    <option value="DATASET                    <option value="SAVASA SOLUCIONES INTEGRALES">
+                    <option value="SERVICIOS INTEGRALES PERSONALIZADOS">
+                    <option value="SERVICOM J&E">
+                    <option value="SERVISOLUCIONES JM">
+                    <option value="SIN IDENTIFICAR">
+                    <option value="SMK DUO CONEXCION">
+                    <option value="SOLUCIONES DANTEL">
+                    <option value="E-VOLT TECK">
+                    <option value="SEGITEL">
+                    <option value="SOLUNET DIGITAL">
+                    <option value="SPACE COMUNICACIONES">
+                    <option value="STARCOM CARIBE">
+                    <option value="SUPERCABLE TELECOMUNICACIONES">
+                    <option value="TELECOMUNICACIONES ZONA BANANERA">
+                    <option value="TIRIAN TELECOMUNICACIONES">
+                    <option value="TOP LINK">
+                    <option value="TUNORTETV TELECOMUNICACIONES">
+                    <option value="TV COMUNICACIONES JL">
+                    <option value="TV LINE">
+                    <option value="TV ZONA BANANERA">
+                        <option value="UFINET">
+                        <option value="TIGO">
+                        <option value="VENTELCO">
+                        <option value="VYC NETWORKS">
+                        <option value="WAYIRANET">
+                        <option value="WIPA">
+                      </datalist>
+                     </div>
 
                 <!-- Cambiar "Sector" por "Departamento" -->
 <div class="mb-3">
@@ -920,6 +1003,7 @@
   <!-- Agregar el script de KML Handler antes del script de admin.js -->
   <script src="./Js/kml-handler.js"></script>
   <script src="./Js/admin.js"></script>
+  <script src="./Js/fix-user-save.js"></script>
   <!-- Asegurar que el botón de guardar proyecto tenga un event listener correcto -->
 <script>
   document.addEventListener("DOMContentLoaded", function() {
@@ -1264,6 +1348,187 @@ document.addEventListener("DOMContentLoaded", function() {
   };
 
   
+});
+</script>
+<!-- Añadir al final del archivo, antes del cierre del body -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Role select change handler
+  const rolSelect = document.getElementById("rol");
+  const sectorField = document.getElementById("sectorContainer");
+  const prstField = document.getElementById("prstContainer");
+  
+  if (rolSelect && sectorField && prstField) {
+    // Initialize on load
+    if (rolSelect.value === "brigada") {
+      sectorField.style.display = "block";
+    } else if (rolSelect.value === "prst") {
+      prstField.style.display = "block";
+    } else {
+      sectorField.style.display = "none";
+      prstField.style.display = "none";
+    }
+    
+    rolSelect.addEventListener("change", function() {
+      // Hide all role-specific fields first
+      sectorField.style.display = "none";
+      prstField.style.display = "none";
+      
+      // Show the appropriate field based on role
+      if (this.value === "brigada") {
+        sectorField.style.display = "block";
+      } else if (this.value === "prst") {
+        prstField.style.display = "block";
+      }
+    });
+  }
+  
+  // Fix for the New User modal
+  const btnNuevoUsuario = document.getElementById("btnNuevoUsuario");
+  if (btnNuevoUsuario) {
+    btnNuevoUsuario.addEventListener("click", function() {
+      setTimeout(() => {
+        const currentRole = rolSelect.value;
+        sectorField.style.display = currentRole === "brigada" ? "block" : "none";
+        prstField.style.display = currentRole === "prst" ? "block" : "none";
+      }, 300);
+    });
+  }
+  
+  // Fix for Edit User
+  window.editarUsuario = function(id) {
+    const usuario = Storage.getUserById(id);
+
+    if (!usuario) {
+      mostrarMensaje("Error", "Usuario no encontrado.");
+      return;
+    }
+
+    document.getElementById("tituloModalUsuario").textContent = "Editar Usuario";
+    document.getElementById("usuarioId").value = usuario.id;
+    document.getElementById("nombre").value = usuario.nombre;
+    document.getElementById("nombreBrigada").value = usuario.nombreBrigada || "";
+    document.getElementById("cargo").value = usuario.cargo || "";
+    document.getElementById("correo").value = usuario.correo;
+    document.getElementById("usuario").value = usuario.usuario;
+    document.getElementById("password").value = usuario.password;
+    document.getElementById("rol").value = usuario.rol;
+    document.getElementById("sector").value = usuario.sector || "";
+    
+    // Handle PRST field
+    if (document.getElementById("prstUsuario")) {
+      document.getElementById("prstUsuario").value = usuario.nombrePRST || "";
+    }
+    
+    // Show/hide fields based on role
+    const sectorField = document.getElementById("sectorContainer");
+    const prstField = document.getElementById("prstContainer");
+    
+    sectorField.style.display = usuario.rol === "brigada" ? "block" : "none";
+    prstField.style.display = usuario.rol === "prst" ? "block" : "none";
+
+    const modalUsuario = new bootstrap.Modal(document.getElementById("modalUsuario"));
+    modalUsuario.show();
+  };
+});
+</script>
+<!-- Script para manejar el botón de guardar usuario -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Eliminar cualquier event listener existente del bot��n
+  const btnGuardarUsuario = document.getElementById("btnGuardarUsuario");
+  if (btnGuardarUsuario) {
+    // Clonar el botón para eliminar todos los event listeners
+    const nuevoBtn = btnGuardarUsuario.cloneNode(true);
+    btnGuardarUsuario.parentNode.replaceChild(nuevoBtn, btnGuardarUsuario);
+    
+    // Asignar un único event listener
+    nuevoBtn.onclick = function(e) {
+      e.preventDefault();
+      console.log("Botón de guardar usuario clickeado (único listener)");
+      
+      // Función para guardar usuario directamente
+      const form = document.getElementById("formUsuario");
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const usuarioId = document.getElementById("usuarioId").value;
+      const usuario = {
+        id: usuarioId || null,
+        nombre: document.getElementById("nombre").value,
+        apellido: document.getElementById("apellido") ? document.getElementById("apellido").value || "" : "",
+        nombreBrigada: document.getElementById("nombreBrigada").value || "",
+        cargo: document.getElementById("cargo").value || "",
+        correo: document.getElementById("correo").value,
+        usuario: document.getElementById("usuario").value,
+        password: document.getElementById("password").value,
+        rol: document.getElementById("rol").value,
+        sector: document.getElementById("sector").value || "",
+        activo: true
+      };
+
+      // Add PRST specific field if role is prst
+      if (usuario.rol === "prst") {
+        usuario.nombrePRST = document.getElementById("prstUsuario").value || "";
+      }
+
+      // Verificar si ya existe un usuario con ese nombre de usuario o correo
+      const usuarios = JSON.parse(localStorage.getItem("air_e_users") || "[]");
+      const usuarioExistente = usuarios.find(u => u.usuario === usuario.usuario && (!usuarioId || u.id !== usuarioId));
+      const correoExistente = usuarios.find(u => u.correo === usuario.correo && (!usuarioId || u.id !== usuarioId));
+
+      if (usuarioExistente) {
+        alert("Ya existe un usuario con ese nombre de usuario.");
+        return;
+      }
+
+      if (correoExistente) {
+        alert("Ya existe un usuario con ese correo electrónico.");
+        return;
+      }
+
+      // Si es un nuevo usuario, generar ID
+      if (!usuario.id) {
+        // Obtener contador
+        const counter = JSON.parse(localStorage.getItem("air_e_counter") || '{"users":10}');
+        usuario.id = (++counter.users).toString();
+        
+        // Guardar contador actualizado
+        localStorage.setItem("air_e_counter", JSON.stringify(counter));
+        
+        // Añadir usuario al array
+        usuarios.push(usuario);
+      } else {
+        // Actualizar usuario existente
+        const index = usuarios.findIndex(u => u.id === usuario.id);
+        if (index !== -1) {
+          usuarios[index] = usuario;
+        } else {
+          usuarios.push(usuario);
+        }
+      }
+
+      // Guardar usuarios actualizados
+      localStorage.setItem("air_e_users", JSON.stringify(usuarios));
+      console.log("Usuario guardado:", usuario);
+
+      // Cerrar modal
+      const modalUsuario = bootstrap.Modal.getInstance(document.getElementById("modalUsuario"));
+      modalUsuario.hide();
+
+      // Recargar tabla
+      if (typeof cargarUsuarios === 'function') {
+        cargarUsuarios();
+      } else {
+        location.reload(); // Recargar la página si la función no está disponible
+      }
+
+      // Mostrar mensaje
+      alert(`Usuario ${usuarioId ? "actualizado" : "creado"} correctamente.`);
+    };
+  }
 });
 </script>
 </body>
