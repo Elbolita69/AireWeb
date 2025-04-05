@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Air-e - Panel PRST</title>
+    <link rel="icon" type="image/png" href="./Images/IconoAir-e.webp">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -14,31 +15,42 @@
     <link href="Css/prst.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-logo">
-            <img src="Images/logo.png" alt="Air-e Logo">
-            <h1>Air-e - Panel PRST</h1>
+    <!-- Header/Navbar combinado -->
+<header class="navbar navbar-expand-lg navbar-light bg-white shadow p-3">
+    <div class="container-fluid">
+        <!-- Logo y título -->
+        <div class="header-logo navbar-brand">
+            <img src="./Images/IconoAir-e.webp" alt="Air-e Logo" id="Logoair-e">
+            <h1 class="d-inline-block ms-2">Air-e - Panel PRST</h1>
         </div>
-        <div class="header-actions">
-            <div class="dropdown">
-                <button class="btn btn-dark position-relative" id="notifications-button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge d-none" id="notification-badge">0</span>
-                </button>
-                <div class="dropdown-menu dropdown-menu-end notifications-dropdown" id="notifications-list">
-                    <div class="dropdown-item text-center">No tienes notificaciones</div>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <!-- Botones de acciones -->
+            <div class="header-actions d-flex align-items-center">
+                <div class="dropdown me-2">
+                    <button class="btn btn-dark position-relative" id="notifications-button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge d-none" id="notification-badge">0</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end notifications-dropdown" id="notifications-list">
+                        <div class="dropdown-item text-center">No tienes notificaciones</div>
+                    </div>
                 </div>
+                <button class="btn btn-dark me-2" id="profile-button">
+                    <i class="fas fa-user"></i>
+                    <span id="user-name">Usuario</span>
+                </button>
+                <button class="btn btn-danger" id="logout-button">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
             </div>
-            <button class="btn btn-dark" id="profile-button">
-                <i class="fas fa-user"></i>
-                <span id="user-name">Usuario</span>
-            </button>
-            <button class="btn btn-danger" id="logout-button">
-                <i class="fas fa-sign-out-alt"></i>
-            </button>
         </div>
-    </header>
+    </div>
+</header>
 
     <!-- Contenido principal -->
     <div class="container-fluid main-content">
@@ -58,7 +70,7 @@
                                 <table class="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th>OT AIR-E</th>
+                                            <th>N° de Radicado</th>
                                             <th>Nombre del Proyecto</th>
                                             <th>Ubicación</th>
                                             <th>Fecha Creación</th>
@@ -110,6 +122,13 @@
                                             <label for="project-dwg" class="form-label">Plano DWG/PDF</label>
                                             <input type="file" class="form-control" id="project-dwg" accept=".dwg, .pdf">
                                             <div class="form-text">Archivo DWG/PDF del plano</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="project-registro" class="form-label">Registro Fotográfico</label>
+                                            <input type="file" class="form-control" id="project-registro" accept=".zip, .xlsx, .xls">
+                                            <div class="form-text">Archivo ZIP o Excel con registro fotográfico</div>
                                         </div>
                                     </div>
                                 </div>
@@ -255,7 +274,7 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="project-observations" class="form-label">Observaciones (Opcional)</label>
-                                            <textarea class="form-control" id="project-observations" rows="3"></textarea>
+                                            <textarea class="form-control" id="project-observations" rows="3" placeholder="Si tiene OT propia, ingrésela aquí junto a sus observaciones adicionales"></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -525,9 +544,9 @@
                         </div>
                         <div class="col-md-4">
                             <div class="profile-item">
-                                <div class="profile-label">Plano PDF</div>
+                                <div class="profile-label">Registro Fotográfico</div>
                                 <div class="profile-value">
-                                    <a href="#" id="detail-plano-link" target="_blank">Ver documento</a>
+                                    <a href="#" id="detail-registro-link" target="_blank">Ver documento</a>
                                 </div>
                             </div>
                         </div>
@@ -591,6 +610,8 @@
                     <h5 class="modal-title">Notificaciones</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                  <button data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
                 <div class="modal-body notifications-modal-body" id="notifications-modal-body">
                     <p class="text-center">Cargando notificaciones...</p>
                 </div>
@@ -638,8 +659,12 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- JSZip for KMZ processing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- Storage JS -->
     <script src="Js/storage.js"></script>
+    <!-- KML Handler JS -->
+    <script src="Js/kml-handler.js"></script>
     <!-- PRST JS -->
     <script src="Js/prst.js"></script>
     

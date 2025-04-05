@@ -1,3 +1,5 @@
+//Ejecutiva.js
+
 // Variables globales
 let currentUser = null
 let currentProject = null
@@ -35,120 +37,173 @@ function loadUserData() {
   document.getElementById("perfilCargo").textContent = currentUser.cargo || "Ejecutiva"
 }
 
+// Update the loadProjects function to use the standardized table structure
 function loadProjects() {
-  // Obtener proyectos asignados a la ejecutiva actual
-  const projects = Storage.getProjects().filter(
-    (project) => project.ejecutivaId === currentUser.id && project.estado === "En Revisión por Ejecutiva",
-  );
+  const loggedUser = Storage.getLoggedUser()
+  const allProjects = Storage.getProjects()
 
-  // Mostrar proyectos en la tabla
-  const tablaProyectos = document.getElementById("tablaProyectos");
+  // Projects in review (main table)
+  const projectsInReview = allProjects.filter(
+    (project) =>
+      project.ejecutivaId === loggedUser.id &&
+      (project.estado === "En Revisión por Ejecutiva" || project.estado === "En Revision por Ejecutiva"),
+  )
+
+  console.log("Projects in review:", projectsInReview)
+
+  // Show projects in review
+  const tablaProyectos = document.getElementById("tablaProyectos")
   if (tablaProyectos) {
-    if (projects.length === 0) {
+    if (projectsInReview.length === 0) {
       tablaProyectos.innerHTML = `
         <tr>
-          <td colspan="8" class="text-center">No hay proyectos asignados para revisión.</td>
+          <td colspan="9" class="text-center">No hay proyectos asignados para revisión.</td>
         </tr>
-      `;
+      `
     } else {
-      tablaProyectos.innerHTML = "";
-      projects.forEach((project) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${project.id}</td>
-  <td>${project.nombre}</td>
-  <td>${project.prstNombre || "No definido"}</td>
-  <td>${project.creadorNombre || "No definido"}</td>
-  <td>${project.municipio}</td>
-  <td>${project.departamento}</td>
-  <td>${new Date(project.fechaEnvio).toLocaleDateString()}</td>
-  <td><span class="badge bg-warning">${project.estado}</span></td>
-  <td>
-    <button class="btn btn-sm btn-primary revisar-proyecto" data-id="${project.id}">
-      <i class="bi bi-eye"></i> Revisar
-    </button>
-  </td>
-        `;
-        tablaProyectos.appendChild(row);
-      });
-    }
-  }
-
-  // Cargar proyectos pendientes (con observaciones)
-  const projectsPendientes = Storage.getProjects().filter(
-    (project) => project.ejecutivaId === currentUser.id && project.estado === "Documentación Errada",
-  );
-
-  const tablaProyectosPendientes = document.getElementById("tablaProyectosPendientes");
-  if (tablaProyectosPendientes) {
-    if (projectsPendientes.length === 0) {
-      tablaProyectosPendientes.innerHTML = `
-        <tr>
-          <td colspan="8" class="text-center">No hay proyectos pendientes de corrección.</td>
-        </tr>
-      `;
-    } else {
-      tablaProyectosPendientes.innerHTML = "";
-      projectsPendientes.forEach((project) => {
-        const row = document.createElement("tr");
+      tablaProyectos.innerHTML = ""
+      projectsInReview.forEach((project) => {
+        const row = document.createElement("tr")
         row.innerHTML = `
           <td>${project.id}</td>
           <td>${project.nombre}</td>
-          <td>${project.nombrePRST || "No definido"}</td> <!-- Nombre del PRST -->
-          <td>${project.municipio}</td>
-          <td>${project.departamento}</td>
-          <td>${new Date(project.fechaEnvio).toLocaleDateString()}</td>
-          <td><span class="badge bg-danger">${project.estado}</span></td>
+          <td>${project.prst || project.prstNombre || "No definido"}</td>
+          <td>${project.creadorNombre || "No definido"}</td>
+          <td>${project.municipio || "No definido"}</td>
+          <td>${project.departamento || "No definido"}</td>
+          <td>${formatDateTime(project.fechaCreacion)}</td>
+          <td><span class="badge bg-warning">En Revisión</span></td>
           <td>
-            <button class="btn btn-sm btn-primary ver-observaciones" data-id="${project.id}">
-              <i class="bi bi-eye"></i> Ver Observaciones
+            <button class="btn btn-sm btn-primary revisar-proyecto" data-id="${project.id}">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-info ver-historial" data-id="${project.id}">
+              <i class="bi bi-clock-history"></i>
             </button>
           </td>
-        `;
-        tablaProyectosPendientes.appendChild(row);
-      });
+        `
+        tablaProyectos.appendChild(row)
+      })
     }
   }
 
-// Cargar proyectos finalizados (aprobados por la ejecutiva)
-const projectsFinalizados = Storage.getProjects().filter(
-  (project) =>
-    project.ejecutivaId === currentUser.id &&
-    (project.estado === "En Asignación" ||
-      project.estado === "Asignado" ||
-      project.estado === "En Revisión de Verificación" ||
-      project.estado === "Finalizado"),
-);
+  // Projects in management (previously "pending")
+  const pendingProjects = allProjects.filter(
+    (project) =>
+      project.ejecutivaId === loggedUser.id &&
+      (project.estado === "En Asignación" ||
+        project.estado === "En Gestion por Analista" ||
+        project.estado === "En Gestion por Brigada" ||
+        project.estado === "En Revision de Verificacion" ||
+        project.estado === "Opcion Mejorar" ||
+        project.estado === "Generacion de Informe" ||
+        project.estado === "Documentación Errada"),
+  )
 
-const tablaProyectosFinalizados = document.getElementById("tablaProyectosFinalizados");
-if (tablaProyectosFinalizados) {
-  if (projectsFinalizados.length === 0) {
-    tablaProyectosFinalizados.innerHTML = `
-      <tr>
-        <td colspan="7" class="text-center">No hay proyectos finalizados.</td>
-      </tr>
-    `;
-  } else {
-    tablaProyectosFinalizados.innerHTML = "";
-    projectsFinalizados.forEach((project) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${project.id}</td>
-        <td>${project.nombre}</td>
-        <td>${project.nombrePRST || "No definido"}</td> <!-- Nombre del PRST -->
-        <td>${project.municipio}</td>
-        <td>${project.departamento}</td>
-        <td>${project.fechaAprobacion ? new Date(project.fechaAprobacion).toLocaleDateString() : "-"}</td>
-        <td>
-          <button class="btn btn-sm btn-info ver-proyecto" data-id="${project.id}">
-            <i class="bi bi-eye"></i> Ver Detalles
-          </button>
-        </td>
-      `;
-      tablaProyectosFinalizados.appendChild(row);
-    });
+  console.log("Pending projects:", pendingProjects)
+
+  const tablaProyectosPendientes = document.getElementById("tablaProyectosPendientes")
+  if (tablaProyectosPendientes) {
+    if (pendingProjects.length === 0) {
+      tablaProyectosPendientes.innerHTML = `
+        <tr>
+          <td colspan="9" class="text-center">No hay proyectos en gestión.</td>
+        </tr>
+      `
+    } else {
+      tablaProyectosPendientes.innerHTML = ""
+      pendingProjects.forEach((project) => {
+        const row = document.createElement("tr")
+
+        // Determine badge class and text based on state
+        const badgeClass = getBadgeClass(project.estado)
+        const badgeText = project.estado
+
+        row.innerHTML = `
+          <td>${project.id}</td>
+          <td>${project.nombre}</td>
+          <td>${project.prst || project.prstNombre || "No definido"}</td>
+          <td>${project.creadorNombre || "No definido"}</td>
+          <td>${project.municipio || "No definido"}</td>
+          <td>${project.departamento || "No definido"}</td>
+          <td>${formatDateTime(project.fechaRechazo || project.fechaCreacion)}</td>
+          <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+          <td>
+            ${
+              project.estado === "Documentación Errada"
+                ? `<button class="btn btn-sm btn-warning ver-observaciones" data-id="${project.id}">
+                <i class="bi bi-exclamation-triangle"></i> Ver Observaciones
+              </button>`
+                : `<button class="btn btn-sm btn-primary ver-proyecto" data-id="${project.id}">
+                <i class="bi bi-eye"></i>
+              </button>`
+            }
+            <button class="btn btn-sm btn-info ver-historial" data-id="${project.id}">
+              <i class="bi bi-clock-history"></i>
+            </button>
+          </td>
+        `
+        tablaProyectosPendientes.appendChild(row)
+      })
+    }
+  }
+
+  // Finished projects (approved by ejecutiva)
+  const finishedProjects = allProjects.filter(
+    (project) =>
+      project.ejecutivaId === loggedUser.id && (project.estado === "Finalizado" || project.estado === "Verificado"),
+  )
+
+  console.log("Finished projects:", finishedProjects)
+
+  const tablaProyectosFinalizados = document.getElementById("tablaProyectosFinalizados")
+  if (tablaProyectosFinalizados) {
+    if (finishedProjects.length === 0) {
+      tablaProyectosFinalizados.innerHTML = `
+        <tr>
+          <td colspan="9" class="text-center">No hay proyectos finalizados.</td>
+        </tr>
+      `
+    } else {
+      tablaProyectosFinalizados.innerHTML = ""
+      finishedProjects.forEach((project) => {
+        const row = document.createElement("tr")
+        row.innerHTML = `
+          <td>${project.id}</td>
+          <td>${project.nombre}</td>
+          <td>${project.prst || project.prstNombre || "No definido"}</td>
+          <td>${project.creadorNombre || "No definido"}</td>
+          <td>${project.municipio || "No definido"}</td>
+          <td>${project.departamento || "No definido"}</td>
+          <td>${formatDateTime(project.fechaAprobacion || project.fechaCreacion)}</td>
+          <td><span class="badge ${getBadgeClass(project.estado)}">${project.estado}</span></td>
+          <td>
+            <button class="btn btn-sm btn-primary ver-proyecto" data-id="${project.id}">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-info ver-historial" data-id="${project.id}">
+              <i class="bi bi-clock-history"></i>
+            </button>
+          </td>
+        `
+        tablaProyectosFinalizados.appendChild(row)
+      })
+    }
   }
 }
+
+// Update the formatDateTime function to include AM/PM
+function formatDateTime(dateString) {
+  if (!dateString) return "-"
+  const date = new Date(dateString)
+  return date.toLocaleString("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  })
 }
 
 // Cargar notificaciones
@@ -201,7 +256,7 @@ function formatDate(dateString) {
   const now = new Date()
   const diffMs = now - date
   const diffSecs = Math.floor(diffMs / 1000)
-  const diffMins = Math.floor(diffSecs / 60)
+  const diffMins = Math.floor(diffMs / 60)
   const diffHours = Math.floor(diffMins / 60)
   const diffDays = Math.floor(diffHours / 24)
 
@@ -270,6 +325,14 @@ function setupEventListeners() {
     if (e.target.closest(".ver-proyecto")) {
       const projectId = e.target.closest(".ver-proyecto").dataset.id
       loadProjectDetails(projectId)
+    }
+  })
+
+  // Ver historial del proyecto
+  document.addEventListener("click", (e) => {
+    if (e.target.closest(".ver-historial")) {
+      const projectId = e.target.closest(".ver-historial").dataset.id
+      showProjectHistory(projectId)
     }
   })
 
@@ -393,230 +456,258 @@ function showSection(sectionId) {
 
 // Cargar proyecto para verificación
 function loadProjectForVerification(projectId) {
-  const project = Storage.getProjectById(projectId);
-  if (!project) return;
+  const project = Storage.getProjectById(projectId)
+  if (!project) return
 
-  currentProject = project;
+  currentProject = project
 
   // Llenar datos del proyecto
-  document.getElementById("verificacionIdProyecto").textContent = project.id;
-  document.getElementById("verificacionNombreProyecto").textContent = project.nombre;
-  document.getElementById("verificacionNombre").textContent = project.nombre;
-  document.getElementById("verificacionPRST").textContent = project.prstNombre || project.creadorNombre;
-  document.getElementById("verificacionDireccionInicial").textContent = project.direccionInicial;
-  document.getElementById("verificacionDireccionFinal").textContent = project.direccionFinal;
-  document.getElementById("verificacionBarrios").textContent = project.barrios?.join(", ") || "No especificado";
-  document.getElementById("verificacionMunicipio").textContent = project.municipio;
-  document.getElementById("verificacionDepartamento").textContent = project.departamento;
-  document.getElementById("verificacionNumeroPostes").textContent = project.numPostes;
-  document.getElementById("verificacionFechaInicio").textContent = project.fechaInicio;
-  document.getElementById("verificacionFechaFin").textContent = project.fechaFin;
-  document.getElementById("verificacionPuntoConexion").textContent = project.puntoConexion;
-  document.getElementById("verificacionObservaciones").textContent = project.observaciones || "No hay observaciones";
+  document.getElementById("verificacionIdProyecto").textContent = project.id
+  document.getElementById("verificacionNombreProyecto").textContent = project.nombre
+  document.getElementById("verificacionNombre").textContent = project.nombre
+  document.getElementById("verificacionPRST").textContent = project.prstNombre || project.creadorNombre
+  document.getElementById("verificacionDireccionInicial").textContent = project.direccionInicial
+  document.getElementById("verificacionDireccionFinal").textContent = project.direccionFinal
+  document.getElementById("verificacionBarrios").textContent = project.barrios?.join(", ") || "No especificado"
+  document.getElementById("verificacionMunicipio").textContent = project.municipio
+  document.getElementById("verificacionDepartamento").textContent = project.departamento
+  document.getElementById("verificacionNumeroPostes").textContent = project.numPostes
+  document.getElementById("verificacionFechaInicio").textContent = project.fechaInicio
+  document.getElementById("verificacionFechaFin").textContent = project.fechaFin
+  document.getElementById("verificacionPuntoConexion").textContent = project.puntoConexion
+  document.getElementById("verificacionObservaciones").textContent = project.observaciones || "No hay observaciones"
 
   // Mostrar enlaces a documentos (si existen)
   if (project.documentos) {
-    document.getElementById("linkArchivoKMZ").textContent = project.documentos.kmz?.nombre || "No disponible";
-    document.getElementById("linkArchivoDWG").textContent = project.documentos.dwg?.nombre || "No disponible";
-    document.getElementById("linkArchivoPDF").textContent = project.documentos.plano?.nombre || "No disponible";
-    document.getElementById("linkArchivoMatricula").textContent = project.documentos.matricula?.nombre || "No disponible";
-    document.getElementById("linkArchivoCC").textContent = project.documentos.cc?.nombre || "No disponible";
-    document.getElementById("linkArchivoExcel").textContent = project.documentos.formulario?.nombre || "No disponible";
+    document.getElementById("linkArchivoKMZ").textContent = project.documentos.kmz?.nombre || "No disponible"
+    document.getElementById("linkArchivoDWG").textContent = project.documentos.dwg?.nombre || "No disponible"
+    document.getElementById("linkArchivoPDF").textContent = project.documentos.plano?.nombre || "No disponible"
+    document.getElementById("linkArchivoMatricula").textContent =
+      project.documentos.matricula?.nombre || "No disponible"
+    document.getElementById("linkArchivoCC").textContent = project.documentos.cc?.nombre || "No disponible"
+    document.getElementById("linkArchivoExcel").textContent = project.documentos.formulario?.nombre || "No disponible"
   }
 
   // Resetear verificación
   document.querySelectorAll(".btn-verificacion").forEach((btn) => {
-    btn.classList.remove("active");
-  });
+    btn.classList.remove("active")
+  })
 
   document.querySelectorAll(".observacion-doc").forEach((field) => {
-    field.value = "";
-    field.disabled = true;
-  });
+    field.value = ""
+    field.disabled = true
+  })
 
   // Mostrar sección de verificación
-  showSection("seccionVerificacion");
+  showSection("seccionVerificacion")
 }
 
-// Rechazar proyecto
-// Rechazar proyecto
+// Update the rechazarProyecto function to add a cancel button and prevent adding more observations after rejection
 function rechazarProyecto() {
   if (!currentProject) {
-    console.error("No hay proyecto seleccionado");
-    return;
+    console.error("No hay proyecto seleccionado")
+    return
   }
 
-  // Verificar que se hayan marcado todos los documentos
-  const docsVerificados = document.querySelectorAll(".btn-verificacion.active");
+  // Verify all documents are checked
+  const docsVerificados = document.querySelectorAll(".btn-verificacion.active")
   if (docsVerificados.length < 6) {
-    showModalMessage("Debe verificar todos los documentos antes de rechazar el proyecto.");
-    return;
+    alert("Debe verificar todos los documentos antes de rechazar el proyecto.")
+    return
   }
 
-  // Verificar que haya al menos un documento rechazado
-  const hayRechazados = Array.from(docsVerificados).some(
-    (btn) => btn.dataset.value === "false"
-  );
-  
+  // Verify at least one document is rejected
+  const hayRechazados = Array.from(docsVerificados).some((btn) => btn.dataset.value === "false")
+
   if (!hayRechazados) {
-    showModalMessage("Para rechazar el proyecto, debe marcar al menos un documento como incorrecto.");
-    return;
+    alert("Para rechazar el proyecto, debe marcar al menos un documento como incorrecto.")
+    return
   }
 
-  // Recopilar observaciones
-  const observaciones = [];
-  let observacionesValidas = true;
+  // Collect observations
+  const observaciones = []
+  let observacionesValidas = true
 
   document.querySelectorAll(".btn-verificacion.active[data-value='false']").forEach((btn) => {
-    const doc = btn.dataset.doc;
-    const obsField = document.getElementById(`obs${doc.charAt(0).toUpperCase() + doc.slice(1)}`);
-    const obsText = obsField.value.trim();
+    const doc = btn.dataset.doc
+    const obsField = document.getElementById(`obs${doc.charAt(0).toUpperCase() + doc.slice(1)}`)
+    const obsText = obsField.value.trim()
 
     if (!obsText) {
-      showModalMessage(`Debe proporcionar observaciones para el documento ${doc.toUpperCase()} rechazado.`);
-      obsField.focus();
-      observacionesValidas = false;
-      return;
+      alert(`Debe proporcionar observaciones para el documento ${doc.toUpperCase()} rechazado.`)
+      obsField.focus()
+      observacionesValidas = false
+      return
     }
 
-    observaciones.push(`${doc.toUpperCase()}: ${obsText}`);
-  });
+    observaciones.push(`${doc.toUpperCase()}: ${obsText}`)
+  })
 
-  if (!observacionesValidas) return;
+  if (!observacionesValidas) return
 
-  // Actualizar proyecto
-  currentProject.estado = "Documentación Errada";
-  currentProject.observacionesEjecutiva = observaciones.join("\n\n");
-  currentProject.fechaRechazo = new Date().toISOString();
+  // Show confirmation dialog with cancel option
+  if (!confirm("¿Está seguro de rechazar este proyecto? Esta acción no se puede deshacer.")) {
+    return // User canceled the action
+  }
 
   try {
-    // Guardar proyecto
-    Storage.saveProject(currentProject);
+    // Update project
+    currentProject.estado = "Documentación Errada"
+    currentProject.observacionesEjecutiva = observaciones.join("\n\n")
+    currentProject.fechaRechazo = new Date().toISOString()
 
-    // Notificar al PRST
+    // Add to history
+    if (!currentProject.historial) {
+      currentProject.historial = []
+    }
+
+    currentProject.historial.push({
+      estado: "Documentación Errada",
+      fecha: new Date().toISOString(),
+      usuario: `${currentUser.nombre} ${currentUser.apellido || ""}`,
+      rol: "Ejecutiva",
+      comentario: "Proyecto rechazado por documentación incorrecta",
+    })
+
+    // Save project
+    Storage.saveProject(currentProject)
+
+    // Notify PRST
     Storage.createNotification({
       usuarioId: currentProject.creadorId,
       tipo: "proyecto_rechazado",
       mensaje: `Tu proyecto "${currentProject.nombre}" ha sido revisado y requiere correcciones.`,
       fechaCreacion: new Date().toISOString(),
       leido: false,
-    });
+    })
 
-    // Notificar a la ejecutiva
+    // Notify ejecutiva
     Storage.createNotification({
       usuarioId: currentUser.id,
       tipo: "proyecto_revisado",
       mensaje: `Has rechazado el proyecto "${currentProject.nombre}" con ID ${currentProject.id}.`,
       fechaCreacion: new Date().toISOString(),
       leido: false,
-    });
+    })
 
-    // Mostrar mensaje de éxito
-    showModalMessage("Proyecto rechazado correctamente. Se han enviado las observaciones al PRST.");
+    alert("Proyecto rechazado correctamente. Se han enviado las observaciones al PRST.")
 
-    // Recargar proyectos y volver a la lista
-    loadProjects();
-    loadNotifications();
-    showSection("seccionProyectos");
-    
+    // Reload data
+    loadProjects()
+    loadNotifications()
+    showSection("seccionProyectos")
   } catch (error) {
-    console.error("Error al rechazar el proyecto:", error);
-    showModalMessage("Ocurrió un error al rechazar el proyecto. Por favor, intente nuevamente.");
+    console.error("Error al rechazar proyecto:", error)
+    alert("Error al rechazar el proyecto. Por favor, intente nuevamente.")
   }
 }
 
-// Función auxiliar para mostrar mensajes modales
-function showModalMessage(message) {
-  const modal = new bootstrap.Modal(document.getElementById('modalMensaje'));
-  document.getElementById('modalMensajeBody').textContent = message;
-  modal.show();
-}
-
-
-// Aprobar proyecto
+// Modificar la función aprobarProyecto para enviar el proyecto al Coordinador Operativo
 function aprobarProyecto() {
   if (!currentProject) return
 
-  // Verificar que se hayan marcado todos los documentos
+  // Verify all documents are checked
   const docsVerificados = document.querySelectorAll(".btn-verificacion.active")
   if (docsVerificados.length < 6) {
     alert("Debe verificar todos los documentos antes de aprobar el proyecto.")
     return
   }
 
-  // Verificar que todos los documentos estén aprobados
+  // Verify all documents are approved
   const todosAprobados = Array.from(docsVerificados).every((btn) => btn.dataset.value === "true")
   if (!todosAprobados) {
     alert("Para aprobar el proyecto, todos los documentos deben estar correctos.")
     return
   }
 
-  // Confirmar acción
+  // Confirm action with cancel option
   if (
     !confirm(
-      '¿Está seguro de aprobar este proyecto? Esta acción asignará el proyecto a un coordinador para su revisión.")) {yecto? Esta acción asignará el proyecto a un coordinador para su revisión.',
+      "¿Está seguro de aprobar este proyecto? Esta acción asignará el proyecto a un coordinador para su revisión.",
     )
   ) {
-    return
+    return // User canceled the action
   }
 
-  // Buscar coordinadores disponibles
-  const coordinadores = Storage.getUsers().filter((user) => user.rol === "coordinador" && user.activo)
+  // Find available coordinators with role "operativo"
+  const coordinadores = Storage.getUsers().filter(
+    (user) => user.rol === "coordinador" && user.tipoCoordinador === "operativo" && user.activo,
+  )
 
   if (coordinadores.length === 0) {
-    alert("No hay coordinadores disponibles para asignar el proyecto. Por favor, contacte al administrador.")
+    alert("No hay coordinadores operativos disponibles para asignar el proyecto. Por favor, contacte al administrador.")
     return
   }
 
-  // Asignar a un coordinador (en un sistema real podría ser por carga de trabajo)
+  // Assign to a random coordinator (in real system would be based on workload)
   const coordinadorAsignado = coordinadores[Math.floor(Math.random() * coordinadores.length)]
 
-  // Actualizar proyecto
+  // Update project
   currentProject.estado = "En Asignación"
   currentProject.coordinadorId = coordinadorAsignado.id
   currentProject.coordinadorNombre = `${coordinadorAsignado.nombre} ${coordinadorAsignado.apellido || ""}`
   currentProject.fechaAprobacion = new Date().toISOString()
+  currentProject.tipoCoordinacion = "operativa" // Mark for operational coordinator
 
-  // Guardar proyecto
-  Storage.saveProject(currentProject)
+  // Add to history
+  if (!currentProject.historial) {
+    currentProject.historial = []
+  }
 
-  // Notificar al PRST
-  Storage.createNotification({
-    usuarioId: currentProject.creadorId,
-    tipo: "proyecto_aprobado",
-    mensaje: `Tu proyecto "${currentProject.nombre}" ha sido aprobado por la ejecutiva y pasará a revisión por el coordinador.`,
-    fechaCreacion: new Date().toISOString(),
-    leido: false,
+  currentProject.historial.push({
+    estado: "En Asignación",
+    fecha: new Date().toISOString(),
+    usuario: `${currentUser.nombre} ${currentUser.apellido || ""}`,
+    rol: "Ejecutiva",
+    comentario: `Proyecto aprobado y asignado al coordinador operativo ${coordinadorAsignado.nombre} ${coordinadorAsignado.apellido || ""}`,
   })
 
-  // Notificar al coordinador
-  Storage.createNotification({
-    usuarioId: coordinadorAsignado.id,
-    tipo: "proyecto_asignado",
-    mensaje: `Se te ha asignado un nuevo proyecto para coordinar: "${currentProject.nombre}" con ID ${currentProject.id}.`,
-    fechaCreacion: new Date().toISOString(),
-    leido: false,
-  })
+  try {
+    // Save project
+    Storage.saveProject(currentProject)
 
-  // Notificar a la ejecutiva
-  Storage.createNotification({
-    usuarioId: currentUser.id,
-    tipo: "proyecto_revisado",
-    mensaje: `Has aprobado el proyecto "${currentProject.nombre}" con ID ${currentProject.id}. Ha sido asignado a ${currentProject.coordinadorNombre}.`,
-    fechaCreacion: new Date().toISOString(),
-    leido: false,
-  })
+    // Notify PRST
+    Storage.createNotification({
+      usuarioId: currentProject.creadorId,
+      tipo: "proyecto_aprobado",
+      mensaje: `Tu proyecto "${currentProject.nombre}" ha sido aprobado por la ejecutiva y pasará a revisión por el coordinador operativo.`,
+      fechaCreacion: new Date().toISOString(),
+      leido: false,
+    })
 
-  // Mostrar mensaje de éxito
-  alert(`Proyecto aprobado correctamente. Ha sido asignado al coordinador ${currentProject.coordinadorNombre}.`)
+    // Notify coordinator
+    Storage.createNotification({
+      usuarioId: coordinadorAsignado.id,
+      tipo: "proyecto_asignado",
+      mensaje: `Se te ha asignado un nuevo proyecto para coordinar: "${currentProject.nombre}" con ID ${currentProject.id}.`,
+      fechaCreacion: new Date().toISOString(),
+      leido: false,
+    })
 
-  // Recargar proyectos y volver a la lista
-  loadProjects()
-  loadNotifications()
-  showSection("seccionProyectos")
+    // Notify ejecutiva
+    Storage.createNotification({
+      usuarioId: currentUser.id,
+      tipo: "proyecto_revisado",
+      mensaje: `Has aprobado el proyecto "${currentProject.nombre}" con ID ${currentProject.id}. Ha sido asignado al coordinador operativo ${currentProject.coordinadorNombre}.`,
+      fechaCreacion: new Date().toISOString(),
+      leido: false,
+    })
+
+    alert(
+      `Proyecto aprobado correctamente. Ha sido asignado al coordinador operativo ${currentProject.coordinadorNombre}.`,
+    )
+
+    // Reload data
+    loadProjects()
+    loadNotifications()
+    showSection("seccionProyectos")
+  } catch (error) {
+    console.error("Error al aprobar proyecto:", error)
+    alert("Error al aprobar el proyecto. Por favor, intente nuevamente.")
+  }
 }
 
-// Cargar observaciones de proyecto
+// Update the loadProjectObservations function to correctly show the header
 function loadProjectObservations(projectId) {
   const project = Storage.getProjectById(projectId)
   if (!project) return
@@ -632,6 +723,24 @@ function loadProjectObservations(projectId) {
   document.getElementById("observacionesDepartamento").textContent = project.departamento
   document.getElementById("observacionesNumeroPostes").textContent = project.numPostes
 
+  // Actualizar el título del encabezado para mostrar "Observaciones de Ejecutiva" en lugar de "Observaciones del Analista"
+  const headerElement = document.querySelector("#seccionObservacionesVerificacion .card-header h5")
+  if (headerElement) {
+    headerElement.innerHTML = '<h5 class="mb-0">Observaciones de Ejecutiva</h5>'
+  }
+
+  // Actualizar el texto del alert para mostrar "Proyecto con Documentación Errada" en lugar de "Proyecto con Observaciones"
+  const alertTitleElement = document.querySelector("#seccionObservacionesVerificacion .alert h5")
+  if (alertTitleElement) {
+    alertTitleElement.innerHTML =
+      '<i class="bi bi-exclamation-triangle-fill me-2"></i> Proyecto con Documentación Errada'
+  }
+
+  const alertTextElement = document.querySelector("#seccionObservacionesVerificacion .alert p")
+  if (alertTextElement) {
+    alertTextElement.textContent = "Se han encontrado problemas con la documentación que deben ser corregidos."
+  }
+
   // Mostrar observaciones
   document.getElementById("observacionesAnalista").innerHTML = project.observacionesEjecutiva.replace(/\n/g, "<br>")
 
@@ -642,9 +751,15 @@ function loadProjectObservations(projectId) {
   showSection("seccionObservacionesVerificacion")
 }
 
-// Enviar observaciones al PRST
+// Update the enviarObservacionesAlPRST function to prevent adding more observations after rejection
 function enviarObservacionesAlPRST() {
   if (!currentProject) return
+
+  // Check if the project is already in "Documentación Errada" state and has observations
+  if (currentProject.estado === "Documentación Errada" && currentProject.observacionesEjecutiva) {
+    alert("Este proyecto ya ha sido rechazado y tiene observaciones. No se pueden agregar más observaciones.")
+    return
+  }
 
   const observaciones = document.getElementById("observacionesParaPRST").value.trim()
 
@@ -656,6 +771,19 @@ function enviarObservacionesAlPRST() {
 
   // Actualizar observaciones del proyecto
   currentProject.observacionesEjecutiva += "\n\nObservaciones adicionales:\n" + observaciones
+
+  // Agregar al historial
+  if (!currentProject.historial) {
+    currentProject.historial = []
+  }
+
+  currentProject.historial.push({
+    estado: "Documentación Errada",
+    fecha: new Date().toISOString(),
+    usuario: `${currentUser.nombre} ${currentUser.apellido || ""}`,
+    rol: "Ejecutiva",
+    comentario: "Se agregaron observaciones adicionales al proyecto",
+  })
 
   // Guardar proyecto
   Storage.saveProject(currentProject)
@@ -690,7 +818,7 @@ function loadProjectDetails(projectId) {
   document.getElementById("finalizacionPRST").textContent = project.creadorNombre
   document.getElementById("finalizacionDireccionInicial").textContent = project.direccionInicial
   document.getElementById("finalizacionDireccionFinal").textContent = project.direccionFinal
-  document.getElementById("finalizacionBarrios").textContent = project.barrios.join(", ") || "No especificado"
+  document.getElementById("finalizacionBarrios").textContent = project.barrios?.join(", ") || "No especificado"
   document.getElementById("finalizacionMunicipio").textContent = project.municipio
   document.getElementById("finalizacionDepartamento").textContent = project.departamento
   document.getElementById("finalizacionNumeroPostes").textContent = project.numPostes
@@ -700,6 +828,162 @@ function loadProjectDetails(projectId) {
 
   // Mostrar sección de finalización
   showSection("seccionFinalizacion")
+}
+
+// Mostrar historial del proyecto
+function showProjectHistory(projectId) {
+  const project = Storage.getProjectById(projectId)
+  if (!project) return
+
+  // Crear historial si no existe
+  if (!project.historial) {
+    project.historial = []
+
+    // Agregar estado inicial
+    project.historial.push({
+      estado: "Nuevo",
+      fecha: project.fechaCreacion,
+      usuario: project.creadorNombre,
+      rol: "PRST",
+      comentario: "Proyecto creado",
+    })
+
+    // Agregar otros estados si existen fechas
+    if (project.fechaEnvio) {
+      project.historial.push({
+        estado: "En Revision por Ejecutiva",
+        fecha: project.fechaEnvio,
+        usuario: project.creadorNombre,
+        rol: "PRST",
+        comentario: "Proyecto enviado a revisión",
+      })
+    }
+
+    if (project.fechaRechazo) {
+      project.historial.push({
+        estado: "Documentación Errada",
+        fecha: project.fechaRechazo,
+        usuario: project.ejecutivaNombre || "Ejecutiva",
+        rol: "Ejecutiva",
+        comentario: "Proyecto rechazado por documentación incorrecta",
+      })
+    }
+
+    if (project.fechaAprobacion) {
+      project.historial.push({
+        estado: "En Asignación",
+        fecha: project.fechaAprobacion,
+        usuario: project.ejecutivaNombre || "Ejecutiva",
+        rol: "Ejecutiva",
+        comentario: "Proyecto aprobado y enviado a coordinación",
+      })
+    }
+
+    if (project.fechaAsignacion) {
+      project.historial.push({
+        estado: project.analistaId ? "En Gestion por Analista" : "En Gestion por Brigada",
+        fecha: project.fechaAsignacion,
+        usuario: project.coordinadorNombre || "Coordinador",
+        rol: "Coordinador",
+        comentario: project.analistaId
+          ? `Proyecto asignado al analista ${project.analistaNombre}`
+          : `Proyecto asignado a la brigada ${project.brigadaNombre}`,
+      })
+    }
+
+    // Guardar el historial
+    Storage.saveProject(project)
+  }
+
+  // Ordenar historial por fecha (más recientes primero)
+  const sortedHistory = [...project.historial].sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+
+  // Crear modal para mostrar historial
+  const modalHtml = `
+    <div class="modal fade" id="historialModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">Historial del Proyecto: ${project.nombre}</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Fecha y Hora</th>
+                    <th>Estado</th>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Comentario</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${sortedHistory
+                    .map(
+                      (item) => `
+                    <tr>
+                      <td>${formatDateTime(item.fecha)}</td>
+                      <td><span class="badge ${getBadgeClass(item.estado)}">${item.estado}</span></td>
+                      <td>${item.usuario}</td>
+                      <td>${item.rol}</td>
+                      <td>${item.comentario}</td>
+                    </tr>
+                  `,
+                    )
+                    .join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `
+
+  // Eliminar modal anterior si existe
+  const oldModal = document.getElementById("historialModal")
+  if (oldModal) {
+    oldModal.remove()
+  }
+
+  // Agregar modal al DOM
+  document.body.insertAdjacentHTML("beforeend", modalHtml)
+
+  // Mostrar modal
+  const historialModal = new bootstrap.Modal(document.getElementById("historialModal"))
+  historialModal.show()
+}
+
+// Obtener clase para el badge según el estado
+function getBadgeClass(estado) {
+  switch (estado) {
+    case "Nuevo":
+      return "bg-secondary"
+    case "En Revision por Ejecutiva":
+      return "bg-warning text-dark"
+    case "En Asignación":
+      return "bg-info text-dark"
+    case "En Gestion por Analista":
+    case "En Gestion por Brigada":
+      return "bg-primary"
+    case "En Revision de Verificacion":
+      return "bg-info"
+    case "Opcion Mejorar":
+      return "bg-warning"
+    case "Generacion de Informe":
+      return "bg-light text-dark"
+    case "Finalizado":
+      return "bg-success"
+    case "Documentación Errada":
+      return "bg-danger"
+    default:
+      return "bg-secondary"
+  }
 }
 
 // Buscar proyectos
@@ -760,5 +1044,6 @@ function cambiarPassword() {
   document.getElementById("formCambiarPassword").reset()
 }
 
-
+// Import bootstrap (assuming it's available globally or via a module bundler)
+const bootstrap = window.bootstrap
 

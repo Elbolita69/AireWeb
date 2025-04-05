@@ -14,6 +14,47 @@
 .politicas-link a {
   color: rgb(120, 223, 188);
 }
+/* Cambiar botones a azules */
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.btn-dark {
+  background-color: #1a4b8c;
+  border-color: #1a4b8c;
+}
+
+.btn-dark:hover, .btn-dark:focus {
+  background-color: #153d75;
+  border-color: #12386b;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.btn-secondary:hover, .btn-secondary:focus {
+  background-color: #5c636a;
+  border-color: #565e64;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover, .btn-danger:focus {
+  background-color: #bb2d3b;
+  border-color: #b02a37;
+}
+
 #Logoair-e {
   font-family: "Montserrat", sans-serif;
   font-size: 16px;
