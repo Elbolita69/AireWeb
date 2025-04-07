@@ -469,27 +469,41 @@ const Storage = {
     return users.find((user) => user.correo === email)
   },
 
-  // Guardar usuario
+  // Guardar usuario - versión mejorada con manejo de errores
   saveUser: function (user) {
-    const users = this.getUsers()
-    // Si no tiene ID, es un nuevo usuario
-    if (!user.id) {
+    try {
+      console.log("Storage.saveUser llamado con:", user)
+      const users = this.getUsers()
+      console.log("Usuarios actuales:", users)
+
+      // Si no tiene ID, es un nuevo usuario
+      if (!user.id) {
         const counter = this.getCounter()
         user.id = (++counter.users).toString()
+        console.log("Nuevo ID generado:", user.id)
         this.saveCounter(counter)
         users.push(user)
-    } else {
+      } else {
         // Actualizar usuario existente
         const index = users.findIndex((u) => u.id === user.id)
         if (index !== -1) {
-            users[index] = user
+          users[index] = user
+          console.log("Usuario actualizado en posición:", index)
         } else {
-            users.push(user)
+          users.push(user)
+          console.log("Usuario existente añadido como nuevo")
         }
+      }
+
+      console.log("Guardando usuarios en localStorage:", users)
+      localStorage.setItem(this.KEYS.USERS, JSON.stringify(users))
+      console.log("Usuario guardado exitosamente")
+      return user
+    } catch (error) {
+      console.error("Error en Storage.saveUser:", error)
+      throw error
     }
-    localStorage.setItem(this.KEYS.USERS, JSON.stringify(users))
-    return user
-},
+  },
 
   // Eliminar usuario
   deleteUser: function (id) {
@@ -511,6 +525,13 @@ const Storage = {
     const user = users.find((u) => u.correo === email && u.password === password && u.activo)
 
     if (user) {
+      // Add last login timestamp
+      user.lastLogin = new Date().toISOString()
+
+      // Update user in storage with last login
+      this.saveUser(user)
+
+      // Set as logged user
       this.setLoggedUser(user)
       return user
     }
@@ -558,100 +579,166 @@ const Storage = {
 
   // Guardar proyecto
   // Dentro del objeto Storage, modificar el método saveProject:
+<<<<<<< HEAD
+=======
   // Modificar el método saveProject para usar el nuevo ID
-  saveProject: function(project) {
-    const projects = this.getProjects();
-    
+>>>>>>> 20de416 (Descripción del cambio)
+  saveProject: function (project) {
+    const projects = this.getProjects()
+
     try {
-        // Si es nuevo proyecto, generar ID
-        if (!project.id) {
-            project.id = this.generateProjectId(project.prstNombre);
-            project.fechaCreacion = new Date().toISOString();
-            project.estado = "Nuevo";
-            projects.push(project);
+      // Si no tiene ID, es un nuevo proyecto
+      if (!project.id) {
+<<<<<<< HEAD
+        // Generar el ID personalizado
+        project.id = this.generateProjectId(project)
+
+        // Incrementar contador
+        const counter = this.getCounter()
+        counter.projects += 1
+        this.saveCounter(counter)
+
+=======
+        // Generar el ID secuencial
+        project.id = this.generateProjectId(project.prstNombre)
+
+        // Incrementar contador
+        const counter = this.getCounter()
+        counter.projects++
+        this.saveCounter(counter)
+
+        // Establecer fecha de creación
+        project.fechaCreacion = new Date().toISOString()
+        project.estado = "Nuevo"
+
+>>>>>>> 20de416 (Descripción del cambio)
+        projects.push(project)
+
+        // Crear notificación
+        this.createNotification({
+          usuarioId: project.creadorId,
+          tipo: "proyecto_creado",
+          mensaje: `Has creado el proyecto "${project.nombre}" con ID ${project.id}.`,
+          fechaCreacion: new Date().toISOString(),
+          leido: false,
+        })
+      } else {
+        // Actualizar proyecto existente
+        const index = projects.findIndex((p) => p.id === project.id)
+        if (index !== -1) {
+<<<<<<< HEAD
+          projects[index] = project
+
+          // Crear notificación
+          this.createNotification({
+            usuarioId: project.creadorId,
+            tipo: "proyecto_actualizado",
+            mensaje: `El proyecto "${project.nombre}" con ID ${project.id} ha sido actualizado.`,
+            fechaCreacion: new Date().toISOString(),
+            leido: false,
+          })
         } else {
-            // Actualizar proyecto existente
-            const index = projects.findIndex(p => p.id === project.id);
-            if (index !== -1) {
-                project.fechaCreacion = projects[index].fechaCreacion; // Mantener fecha original
-                project.fechaActualizacion = new Date().toISOString();
-                projects[index] = project;
-            } else {
-                projects.push(project);
-            }
+          projects.push(project)
         }
-        
-        localStorage.setItem(this.KEYS.PROJECTS, JSON.stringify(projects));
-        return project;
+      }
+
+      localStorage.setItem(this.KEYS.PROJECTS, JSON.stringify(projects))
+      return project
     } catch (error) {
-        console.error("Error saving project:", error);
-        throw error;
+      console.error("Error en saveProject:", error)
+      throw error // Re-lanzar el error para manejarlo en prst.js
     }
-},
+  },
 
-generateProjectId: function(prstName) {
-    const prstShortName = this.getPRSTShortName(prstName);
-    const projects = this.getProjects();
-    
-    // Encontrar máxima continuidad para este PRST
-    let maxContinuidad = 0;
-    const prefix = prstShortName + "_";
-    
-    projects.forEach(project => {
-        if (project.id && project.id.startsWith(prefix)) {
-            const continuidad = parseInt(project.id.replace(prefix, ""));
-            if (!isNaN(continuidad) && continuidad > maxContinuidad) {
-                maxContinuidad = continuidad;
-            }
+  // Añadir este nuevo método al objeto Storage:
+  generateProjectId: function (project) {
+    // Obtener el usuario PRST que crea el proyecto
+    const creator = this.getUserById(project.creadorId)
+    if (!creator || creator.rol !== "prst") {
+      throw new Error("El proyecto debe ser creado por un PRST")
+    }
+
+    // 1. PRST (nombrePRST en mayúsculas, reemplazar espacios con _)
+    const prstPart = creator.nombrePRST ? creator.nombrePRST.toUpperCase().replace(/\s+/g, "_") : "PRST"
+
+    // 2. Departamento (código según el departamento del proyecto)
+    let deptCode = "UNK"
+    switch (project.departamento?.toUpperCase()) {
+      case "ATLÁNTICO":
+      case "ATLANTICO":
+        deptCode = "ALT"
+        break
+      case "MAGDALENA":
+        deptCode = "MAG"
+        break
+      case "LA GUAJIRA":
+      case "GUAJIRA":
+        deptCode = "LA"
+        break
+    }
+
+    // 3. Mes y año actual
+    const now = new Date()
+    const monthNames = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"]
+    const monthPart = monthNames[now.getMonth()]
+    const yearPart = now.getFullYear()
+
+    // 4. Número continuo (contar proyectos existentes con mismo PRST, departamento y periodo)
+    const existingProjects = this.getProjects().filter((p) => {
+      const parts = p.id.split("_")
+      return (
+        parts.length >= 4 && parts[0] === prstPart && parts[1] === deptCode && parts[2] === `${monthPart}.${yearPart}`
+      )
+    })
+
+    const sequentialNumber = existingProjects.length + 1
+
+    // Construir el ID completo
+    return `${prstPart}_${deptCode}_${monthPart}.${yearPart}_${sequentialNumber}`
+=======
+          // Guardar la fecha de creación original
+          const originalCreationDate = projects[index].fechaCreacion
+          project.fechaCreacion = originalCreationDate
+
+          // Actualizar proyecto
+          project.fechaActualizacion = new Date().toISOString()
+          projects[index] = project
+
+          // Crear notificación
+          this.createNotification({
+            usuarioId: project.creadorId,
+            tipo: "proyecto_actualizado",
+            mensaje: `El proyecto "${project.nombre}" con ID ${project.id} ha sido actualizado.`,
+            fechaCreacion: new Date().toISOString(),
+            leido: false,
+          })
+        } else {
+          // Esto no debería ocurrir, pero por si acaso
+          projects.push(project)
         }
-    });
-    
-    return `${prefix}${maxContinuidad + 1}`;
-},
+      }
 
-getPRSTShortName: function(fullName) {
-    const prstList = this.getPRSTList();
-    const found = prstList.find(p => 
-        p.nombreCompleto.toLowerCase() === fullName.toLowerCase() || 
-        p.nombreCorto.toLowerCase() === fullName.toLowerCase()
-    );
-    return found ? found.nombreCorto.replace(/\s+/g, '_') : fullName.replace(/\s+/g, '_');
-},
+      localStorage.setItem(this.KEYS.PROJECTS, JSON.stringify(projects))
+      return project
+    } catch (error) {
+      console.error("Error en saveProject:", error)
+      throw error
+    }
+  },
 
   // Añadir este nuevo método al objeto Storage:
   generateProjectId: function (prstName) {
     // Obtener el nombre corto del PRST
-    const prstShortName = this.getPRSTShortName(prstName);
-    
-    // Obtener la fecha actual
-    const now = new Date();
-    const month = now.toLocaleString('default', { month: 'short' }).toUpperCase();
-    const year = now.getFullYear();
-    
-    // Obtener todos los proyectos existentes de este PRST en el mismo mes/año
-    const allProjects = this.getProjects();
-    const prstProjects = allProjects.filter(p => 
-        p.prstNombre === prstName && 
-        p.id && 
-        p.id.includes(`${prstShortName}_${month}_${year}`)
-    );
-    
-    // Encontrar el siguiente número de secuencia
-    let sequence = 1;
-    if (prstProjects.length > 0) {
-        const sequences = prstProjects.map(p => {
-            const parts = p.id.split('.');
-            return parts.length > 1 ? parseInt(parts[1]) : 0;
-        }).filter(seq => !isNaN(seq));
-        
-        if (sequences.length > 0) {
-            sequence = Math.max(...sequences) + 1;
-        }
-    }
-    
-    // Crear el nuevo ID con formato: "PRST_MES_AÑO.SECUENCIA"
-    return `${prstShortName}_${month}_${year}.${sequence}`;
-},
+    const prstShortName = this.getPRSTShortName(prstName)
+
+    // Obtener el contador actual
+    const counter = this.getCounter()
+    const nextId = counter.projects + 1
+
+    // Generar el ID con el formato "NOMBRE_CORTO_CONTINUIDAD"
+    return `${prstShortName}_${nextId}`
+>>>>>>> 20de416 (Descripción del cambio)
+  },
 
   // Eliminar proyecto
   deleteProject: function (id) {
@@ -737,6 +824,12 @@ getPRSTShortName: function(fullName) {
   // Guardar contador
   saveCounter: function (counter) {
     localStorage.setItem(this.KEYS.COUNTER, JSON.stringify(counter))
+  },
+
+  // Modify or add the getUserByUsername method to ensure PRST users can log in
+  getUserByUsername: function (username) {
+    const users = this.getUsers()
+    return users.find((user) => user.usuario === username)
   },
 }
 

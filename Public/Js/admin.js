@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault()
     mostrarSeccion(seccionSolicitudes)
     actualizarNavActivo(navSolicitudes)
-    cargarSolicitudes()
+    cargarSolicitudesFunc()
   })
 
   cerrarSesion.addEventListener("click", (e) => {
@@ -115,7 +115,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Event listeners para botones
   btnNuevoUsuario.addEventListener("click", abrirModalNuevoUsuario)
   btnNuevoProyecto.addEventListener("click", abrirModalNuevoProyecto)
-  btnGuardarUsuario.addEventListener("click", guardarUsuario)
+  // Comentamos esta línea para evitar duplicar el event listener
+  // btnGuardarUsuario.addEventListener("click", guardarUsuario)
   btnGuardarProyecto.addEventListener("click", guardarProyecto)
   btnGuardarAsignaciones.addEventListener("click", guardarAsignaciones)
   markAllAsRead.addEventListener("click", marcarTodasLeidas)
@@ -127,8 +128,8 @@ document.addEventListener("DOMContentLoaded", () => {
   filtroEstadoProyecto.addEventListener("change", cargarProyectos)
   filtroSectorProyecto.addEventListener("change", cargarProyectos)
   buscarProyecto.addEventListener("input", cargarProyectos)
-  filtroEstadoSolicitud.addEventListener("change", cargarSolicitudes)
-  buscarSolicitud.addEventListener("input", cargarSolicitudes)
+  filtroEstadoSolicitud.addEventListener("change", cargarSolicitudesFunc)
+  buscarSolicitud.addEventListener("input", cargarSolicitudesFunc)
 
   // Event listeners para asignaciones
   sectorAsignacion.addEventListener("change", cargarProyectosPorSector)
@@ -312,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (notif && notif.tipo === "solicitud_password") {
           mostrarSeccion(seccionSolicitudes)
           actualizarNavActivo(navSolicitudes)
-          cargarSolicitudes()
+          cargarSolicitudesFunc()
         }
       })
     })
@@ -325,6 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Función para cargar usuarios
+  // Modify the cargarUsuarios function to better display PRST info
   function cargarUsuarios() {
     const usuarios = Storage.getUsers()
     const tablaUsuarios = document.getElementById("tablaUsuarios")
@@ -388,6 +390,39 @@ document.addEventListener("DOMContentLoaded", () => {
           rolBadgeClass = "bg-light text-dark"
       }
 
+<<<<<<< HEAD
+      // Determinar qué mostrar en la columna de brigada/PRST
+      let equipoInfo = "N/A"
+      if (usuario.rol === "brigada" && usuario.nombreBrigada) {
+        equipoInfo = usuario.nombreBrigada
+      } else if (usuario.rol === "prst" && usuario.nombrePRST) {
+        equipoInfo = usuario.nombrePRST
+      }
+
+      html += `
+      <tr>
+        <td>${usuario.id}</td>
+        <td>${usuario.nombre} ${usuario.apellido || ""}</td>
+        <td>${usuario.usuario}</td>
+        <td>${usuario.correo}</td>
+        <td>
+          <span class="badge ${rolBadgeClass}">
+            ${rolTexto}
+          </span>
+        </td>
+        <td>${equipoInfo}</td>
+        <td>${usuario.sector || "N/A"}</td>
+        <td>
+          <button class="btn btn-sm btn-primary me-1" onclick="editarUsuario('${usuario.id}')">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="eliminarUsuario('${usuario.id}')">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `
+=======
       html += `
         <tr>
           <td>${usuario.id}</td>
@@ -411,14 +446,15 @@ document.addEventListener("DOMContentLoaded", () => {
           </td>
         </tr>
       `
+>>>>>>> 20de416 (Descripción del cambio)
     })
 
     if (usuariosFiltrados.length === 0) {
       html = `
-        <tr>
-          <td colspan="8" class="text-center">No se encontraron usuarios</td>
-        </tr>
-      `
+      <tr>
+        <td colspan="8" class="text-center">No se encontraron usuarios</td>
+      </tr>
+    `
     }
 
     tablaUsuarios.innerHTML = html
@@ -435,19 +471,30 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Función para guardar usuario
-  function guardarUsuario() {
-    const form = document.getElementById("formUsuario")
+  // Modify the guardarUsuario function to ensure it works correctly
+  // and is available globally
 
+  // Replace the existing guardarUsuario function with this version
+  // Función para guardar usuario - versión mejorada con logs para depuración
+  function guardarUsuario() {
+    console.log("Función guardarUsuario ejecutada")
+
+    const form = document.getElementById("formUsuario")
     if (!form.checkValidity()) {
       form.reportValidity()
       return
     }
 
     const usuarioId = document.getElementById("usuarioId").value
+    console.log("ID de usuario:", usuarioId)
+
     const usuario = {
       id: usuarioId || null,
       nombre: document.getElementById("nombre").value,
+<<<<<<< HEAD
+=======
       apellido: document.getElementById("apellido").value || "",
+>>>>>>> 20de416 (Descripción del cambio)
       nombreBrigada: document.getElementById("nombreBrigada").value || "",
       cargo: document.getElementById("cargo").value || "",
       correo: document.getElementById("correo").value,
@@ -456,6 +503,8 @@ document.addEventListener("DOMContentLoaded", () => {
       rol: document.getElementById("rol").value,
       sector: document.getElementById("sector").value || "",
       activo: true,
+<<<<<<< HEAD
+=======
     }
 
     // Campos específicos por rol
@@ -465,36 +514,92 @@ document.addEventListener("DOMContentLoaded", () => {
       usuario.matriculaProfesional = document.getElementById("matriculaProfesional").value || ""
     } else if (usuario.rol === "coordinador") {
       usuario.tipoCoordinador = document.getElementById("tipoCoordinador").value || ""
+>>>>>>> 20de416 (Descripción del cambio)
     }
 
-    // Verificar si ya existe un usuario con ese nombre de usuario o correo
-    const usuarios = Storage.getUsers()
-    const usuarioExistente = usuarios.find((u) => u.usuario === usuario.usuario && (!usuarioId || u.id !== usuarioId))
-    const correoExistente = usuarios.find((u) => u.correo === usuario.correo && (!usuarioId || u.id !== usuarioId))
+    console.log("Datos del usuario a guardar:", usuario)
 
-    if (usuarioExistente) {
-      mostrarMensaje("Error", "Ya existe un usuario con ese nombre de usuario.")
-      return
+    // Add PRST specific field if role is prst
+    if (usuario.rol === "prst") {
+      usuario.nombrePRST = document.getElementById("prstUsuario").value || ""
+      console.log("Campo PRST añadido:", usuario.nombrePRST)
     }
 
-    if (correoExistente) {
-      mostrarMensaje("Error", "Ya existe un usuario con ese correo electrónico.")
-      return
+    try {
+      // Verificar si ya existe un usuario con ese nombre de usuario o correo
+      const usuarios = Storage.getUsers()
+      console.log("Usuarios existentes:", usuarios)
+
+      const usuarioExistente = usuarios.find((u) => u.usuario === usuario.usuario && (!usuarioId || u.id !== usuarioId))
+      const correoExistente = usuarios.find((u) => u.correo === usuario.correo && (!usuarioId || u.id !== usuarioId))
+
+      if (usuarioExistente) {
+        console.log("Usuario existente encontrado:", usuarioExistente)
+        mostrarMensaje("Error", "Ya existe un usuario con ese nombre de usuario.")
+        return
+      }
+
+      if (correoExistente) {
+        console.log("Correo existente encontrado:", correoExistente)
+        mostrarMensaje("Error", "Ya existe un usuario con ese correo electrónico.")
+        return
+      }
+
+      // Guardar usuario directamente en localStorage si Storage.saveUser falla
+      try {
+        console.log("Intentando guardar usuario con Storage.saveUser")
+        Storage.saveUser(usuario)
+      } catch (error) {
+        console.error("Error al guardar con Storage.saveUser:", error)
+
+        // Método alternativo: guardar directamente en localStorage
+        console.log("Intentando guardar directamente en localStorage")
+        const usuariosActuales = JSON.parse(localStorage.getItem("air_e_users") || "[]")
+
+        if (!usuario.id) {
+          // Es un nuevo usuario, generar ID
+          const counter = JSON.parse(localStorage.getItem("air_e_counter") || '{"users":10}')
+          usuario.id = (++counter.users).toString()
+          localStorage.setItem("air_e_counter", JSON.stringify(counter))
+          usuariosActuales.push(usuario)
+        } else {
+          // Actualizar usuario existente
+          const index = usuariosActuales.findIndex((u) => u.id === usuario.id)
+          if (index !== -1) {
+            usuariosActuales[index] = usuario
+          } else {
+            usuariosActuales.push(usuario)
+          }
+        }
+
+        localStorage.setItem("air_e_users", JSON.stringify(usuariosActuales))
+      }
+
+      console.log("Usuario guardado exitosamente")
+
+      // Cerrar modal
+      const modalUsuario = bootstrap.Modal.getInstance(document.getElementById("modalUsuario"))
+      if (modalUsuario) {
+        modalUsuario.hide()
+      } else {
+        console.error("No se pudo obtener la instancia del modal")
+        document.getElementById("modalUsuario").style.display = "none"
+        document.querySelector(".modal-backdrop")?.remove()
+      }
+
+      // Recargar tabla
+      cargarUsuarios()
+
+      // Mostrar mensaje
+      mostrarMensaje("Éxito", `Usuario ${usuarioId ? "actualizado" : "creado"} correctamente.`)
+    } catch (error) {
+      console.error("Error en la función guardarUsuario:", error)
+      alert("Error al guardar el usuario: " + error.message)
     }
-
-    // Guardar usuario
-    Storage.saveUser(usuario)
-
-    // Cerrar modal
-    const modalUsuario = bootstrap.Modal.getInstance(document.getElementById("modalUsuario"))
-    modalUsuario.hide()
-
-    // Recargar tabla
-    cargarUsuarios()
-
-    // Mostrar mensaje
-    mostrarMensaje("Éxito", `Usuario ${usuarioId ? "actualizado" : "creado"} correctamente.`)
   }
+
+  // Make the function available globally
+  window.guardarUsuario = guardarUsuario
 
   // Función para cargar proyectos
   function cargarProyectos() {
@@ -581,6 +686,76 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (proyectosFiltrados.length === 0) {
       html = `
+<<<<<<< HEAD
+        <tr>
+          <td colspan="10" class="text-center">No se encontraron proyectos</td>
+        </tr>
+      `
+    }
+
+    tablaProyectos.innerHTML = html
+  }
+
+  // Función para cargar proyectos
+  // Modificar la función cargarProyectos para asegurar que se muestre el PRST
+  function cargarProyectosFunc() {
+    const proyectos = Storage.getProjects()
+    const tablaProyectos = document.getElementById("tablaProyectos")
+
+    // Cambiar el encabezado de la tabla de "Sector" a "Departamento"
+    const encabezadosSector = document.querySelectorAll("th")
+    encabezadosSector.forEach((th) => {
+      if (th.textContent.includes("Sector")) {
+        th.textContent = "Departamento"
+      }
+    })
+
+    // Aplicar filtros
+    const estadoFiltro = document.getElementById("filtroEstadoProyecto").value
+    const sectorFiltro = document.getElementById("filtroSectorProyecto").value
+    const prstFiltro = document.getElementById("filtroPRST").value.toLowerCase()
+    const busqueda = document.getElementById("buscarProyecto").value.toLowerCase()
+
+    const proyectosFiltrados = proyectos.filter((proyecto) => {
+      const cumpleEstado = !estadoFiltro || proyecto.estado === estadoFiltro
+      const cumpleSector = !sectorFiltro || proyecto.sector === sectorFiltro
+      const cumplePRST = !prstFiltro || (proyecto.prst && proyecto.prst.toLowerCase().includes(prstFiltro))
+      const cumpleBusqueda =
+        !busqueda ||
+        proyecto.nombre.toLowerCase().includes(busqueda) ||
+        (proyecto.descripcion && proyecto.descripcion.toLowerCase().includes(busqueda))
+
+      return cumpleEstado && cumpleSector && cumplePRST && cumpleBusqueda
+    })
+
+    // Generar HTML para la tabla
+    let html = ""
+    proyectosFiltrados.forEach((proyecto) => {
+      // Obtener progreso del proyecto
+      const progreso = Storage.getProjectProgress(proyecto.id)
+
+      // Contar usuarios asignados
+      const usuariosAsignadosCount = proyecto.usuariosAsignados ? proyecto.usuariosAsignados.length : 0
+
+      // Contar postes totales
+      let postesTotales = 0
+      if (proyecto.kmlData && proyecto.kmlData.puntos) {
+        postesTotales = proyecto.kmlData.puntos.filter((p) => {
+          const nombre = (p.nombre || "").toLowerCase()
+          const descripcion = (p.descripcion || "").toLowerCase()
+          return (
+            nombre.includes("poste") ||
+            descripcion.includes("poste") ||
+            /^p\d+$/i.test(nombre) ||
+            /^poste\s*\d+$/i.test(nombre) ||
+            /^\d+$/.test(nombre)
+          )
+        }).length
+      }
+
+      html += `
+=======
+>>>>>>> 20de416 (Descripción del cambio)
       <tr>
         <td colspan="9" class="text-center">No se encontraron proyectos</td>
       </tr>
@@ -696,7 +871,7 @@ document.addEventListener("DOMContentLoaded", () => {
             modalProyecto.hide()
 
             // Recargar tabla
-            cargarProyectos()
+            cargarProyectosFunc()
 
             // Mostrar mensaje
             mostrarMensaje("Éxito", `Proyecto ${proyectoId ? "actualizado" : "creado"} correctamente.`)
@@ -735,7 +910,7 @@ document.addEventListener("DOMContentLoaded", () => {
             modalProyecto.hide()
 
             // Recargar tabla
-            cargarProyectos()
+            cargarProyectosFunc()
 
             // Mostrar mensaje
             mostrarMensaje("Éxito", `Proyecto ${proyectoId ? "actualizado" : "creado"} correctamente.`)
@@ -760,7 +935,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modalProyecto.hide()
 
       // Recargar tabla
-      cargarProyectos()
+      cargarProyectosFunc()
 
       // Mostrar mensaje
       mostrarMensaje("Éxito", `Proyecto ${proyectoId ? "actualizado" : "creado"} correctamente.`)
@@ -974,7 +1149,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Función para cargar solicitudes de cambio de contraseña
-  function cargarSolicitudes() {
+  function cargarSolicitudesFunc() {
     const solicitudes = Storage.getPasswordRequests()
     const listaSolicitudes = document.getElementById("listaSolicitudes")
     const sinSolicitudes = document.getElementById("sinSolicitudes")
@@ -1159,7 +1334,7 @@ document.addEventListener("DOMContentLoaded", () => {
       modalProcesarSolicitud.hide()
 
       // Recargar solicitudes
-      cargarSolicitudes()
+      cargarSolicitudesFunc()
 
       // Mostrar mensaje
       mostrarMensaje("Éxito", "Solicitud aprobada correctamente.")
@@ -1175,7 +1350,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (resultado) {
         // Recargar solicitudes
-        cargarSolicitudes()
+        cargarSolicitudesFunc()
 
         // Mostrar mensaje
         mostrarMensaje("Éxito", "Solicitud rechazada correctamente.")
@@ -1420,7 +1595,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.eliminarProyecto = (id) => {
     if (confirm("¿Está seguro de que desea eliminar este proyecto?")) {
       Storage.deleteProject(id)
-      cargarProyectos()
+      cargarProyectosFunc()
       mostrarMensaje("Éxito", "Proyecto eliminado correctamente.")
     }
   }
@@ -1526,6 +1701,27 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
+  // Add this to the DOMContentLoaded event listener to handle role changes
+  // Role select change handler
+  const rolSelect2 = document.getElementById("rol")
+  const sectorField2 = document.getElementById("sectorContainer")
+  const prstField = document.getElementById("prstContainer")
+
+  if (rolSelect2) {
+    rolSelect2.addEventListener("change", function () {
+      // Hide all role-specific fields first
+      if (sectorField2) sectorField2.style.display = "none"
+      if (prstField) prstField.style.display = "none"
+
+      // Show the appropriate field based on role
+      if (this.value === "brigada") {
+        if (sectorField2) sectorField2.style.display = "block"
+      } else if (this.value === "prst") {
+        if (prstField) prstField.style.display = "block"
+      }
+    })
+  }
+
   // Fix the accept and reject buttons in password requests section
   window.rechazarSolicitudFuncion = (id) => {
     if (confirm("¿Está seguro de que desea rechazar esta solicitud?")) {
@@ -1533,7 +1729,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (resultado) {
         // Recargar solicitudes
-        cargarSolicitudes()
+        cargarSolicitudesFunc()
 
         // Mostrar mensaje
         mostrarMensaje("Éxito", "Solicitud rechazada correctamente.")
@@ -1545,9 +1741,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Fix filter functionality in admin panel
   // Enhance the filter for password requests
+<<<<<<< HEAD
+  document.getElementById("filtroEstadoSolicitud").addEventListener("change", cargarSolicitudesFunc)
+  document.getElementById("buscarSolicitud").addEventListener("input", cargarSolicitudesFunc)
+=======
   document.getElementById("filtroEstadoSolicitud").addEventListener("change", cargarSolicitudes)
   document.getElementById("buscarSolicitud").addEventListener("input", cargarSolicitudes)
 
   // Enhanced function to load password requests with filtering
+>>>>>>> 20de416 (Descripción del cambio)
 })
 
